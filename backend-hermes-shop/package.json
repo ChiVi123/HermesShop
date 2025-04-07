@@ -1,18 +1,25 @@
 {
-    "name": "backend-hermes-shop",
-    "version": "1.0.0",
-    "description": "api hermes shop",
-    "license": "ISC",
-    "author": "",
-    "type": "commonjs",
-    "main": "src/server.ts",
-    "scripts": {
-        "dev": "nodemon",
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "devDependencies": {
-        "nodemon": "^3.1.9",
-        "ts-node": "^10.9.2",
-        "typescript": "^5.8.3"
-    }
+  "name": "backend-hermes-shop",
+  "version": "1.0.0",
+  "description": "api hermes shop",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "src/server.ts",
+  "scripts": {
+    "dev": "nodemon",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.24.0",
+    "@typescript-eslint/parser": "^8.29.1",
+    "eslint": "^9.24.0",
+    "globals": "^16.0.0",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.29.1"
+  }
 }
