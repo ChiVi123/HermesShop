@@ -1,0 +1,189 @@
+product [icon: package, color: red] {
+  id string pk
+  name string unique
+  slugify string
+  categoryId string fk
+  currency string
+  rating number
+  gender string
+  status string
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+category [icon: packer, color: blue] {
+  id string pk
+  name string
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+sku [color: yellow] {
+  id string pk
+  productId string fk
+  name string
+  slugify string
+  price number
+  discountPrice number
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+image {
+  id string fk
+  src string
+  thumbnail boolean
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+product_image {
+  productId string fk unique
+  imageId string fk unique
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+product_attr {
+  productId string fk
+  key string
+  type string
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+sku_attr {
+  skuId string fk
+  key string
+  value unknow
+  unit string
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+cart [color: green] {
+  id string pk
+  userId string fk
+  total number
+  status string
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+cart_product {
+  cardId string fk unique
+  productId string fk unique
+  quantity number
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+order [color: orange] {
+  id string pk
+  cartId string fk
+  userId string fk
+  addressId string fk
+  description string
+  total number
+  paymentType string
+  status string
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+order_product {
+  orderId string fk
+  productId string fk
+  quantity number
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+user [icon: user, color: cyan] {
+  id string pk
+  username string unique
+  displayName string unique
+  password string
+  avatarId string fk
+  addressId string fk
+  role string
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+inventory [icon: storage, color: cyan] {
+  id string pk
+  skuId string fk
+  stock number
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+reservation {
+  inventoryId string fk
+  userId string fk
+  quantity number
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+address [icon: map, color: yellow] {
+  id string pk
+  userId string fk
+  ward string
+  district string
+  province string
+  description string
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+review [icon: message-circle, color: purple] {
+  id string pk
+  userId string fk
+  productId string fk
+  rating number
+  content string
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+review_image {
+  reviewId string fk unique
+  imageId string fk unique
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+cart.id - order.cartId
+cart.id < cart_product.cardId
+
+category.id < product.categoryId
+
+user.id < cart.userId
+user.id > order.userId
+user.id - review.userId
+user.id < reservation.userId
+
+product.id < cart_product.productId
+product.id < order_product.productId
+product.id < product_image.productId
+product.id - product_attr.productId
+product.id - review.productId
+product.id < sku.id
+
+sku.id < sku_attr.skuId
+sku.id - inventory.skuId
+
+image.id - product_image.imageId
+image.id - user.avatarId
+image.id - review_image.imageId
+
+order.id < order_product.orderId
+
+address.id - order.addressId
+address.id - user.addressId
+
+review.id - review_image.reviewId
+
+inventory.id < reservation.inventoryId
