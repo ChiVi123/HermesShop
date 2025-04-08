@@ -19,6 +19,7 @@ function defineRoutes(controllers: (typeof Controller)[], application: Express) 
         securityPathConfig.forEach((regexPath) => {
           if (regexPath.test(completePath)) completeHandlers = [authMiddleware, ...completeHandlers];
         });
+
         application[method](completePath, completeHandlers);
       }
     }

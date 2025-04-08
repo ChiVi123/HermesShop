@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import '~/types/globals';
 import '~/utils/logging';
 
+import AsyncExitHook from 'async-exit-hook';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
@@ -9,6 +10,7 @@ import { corsOptions } from '~/configs/cors';
 import env from '~/configs/environment';
 import v1Controllers from '~/controllers/v1';
 import defineRoutes from '~/core/defineRoutes';
+import { closeDB, connectDB } from '~/core/mongodb';
 
 const startServer = () => {
   const app = express();
@@ -27,9 +29,26 @@ const startServer = () => {
   defineRoutes(v1Controllers, app);
   logging('[App] Defined Controller Routing');
 
-  app.listen(env.SERVER_PORT, () => {
-    logging(`[App] Server Started, running http://${env.SERVER_HOSTNAME}:${env.SERVER_PORT}`);
+  app.listen(env.LOCAL_SERVER_PORT, () => {
+    logging(`[App] Server Started, running http://${env.LOCAL_SERVER_HOSTNAME}:${env.LOCAL_SERVER_PORT}`);
+  });
+
+  AsyncExitHook(() => {
+    logging('[App] Exit');
+    closeDB();
   });
 };
 
-startServer();
+logging('[App] Mongodb connecting...');
+
+connectDB()
+  .then(() => {
+    logging('[App] Mongodb connected');
+  })
+  .then(() => {
+    startServer();
+  })
+  .catch((error) => {
+    logging('[App Error]', error);
+    process.exit(0);
+  });

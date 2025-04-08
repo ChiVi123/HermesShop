@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { StatusCodes } from '~/configs/statusCode';
 import Controller from '~/controllers/Controller';
+import { getDB } from '~/core/mongodb';
 import controllerDecorator from '~/decorators/controllerDecorator';
 import routeDecorator from '~/decorators/routeDecorator';
 
@@ -9,6 +10,11 @@ class TestController extends Controller {
   @routeDecorator('get', '/health-check')
   getHealthCheck(_req: Request, res: Response) {
     res.status(StatusCodes.OK).json({ message: 'response successfully' });
+  }
+
+  @routeDecorator('get', '/database')
+  getMongoDb(_req: Request, res: Response) {
+    res.status(StatusCodes.OK).json({ message: 'successfully', mongodb: getDB().databaseName });
   }
 
   @routeDecorator('get', '/throw-error')

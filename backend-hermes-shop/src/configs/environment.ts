@@ -4,8 +4,8 @@ import Joi from 'joi';
 import type { StringValue } from 'ms';
 
 interface IEnv {
-  SERVER_PORT: number;
-  SERVER_HOSTNAME: string;
+  LOCAL_SERVER_PORT: number;
+  LOCAL_SERVER_HOSTNAME: string;
   SERVER_COOKIE_MAX_AGE: StringValue;
   SERVER_ORIGIN_WHITELIST: string[];
 
@@ -44,8 +44,8 @@ const MONGO_URI = `mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_CLU
 
 // -----------------------
 const envValues = {
-  SERVER_PORT: process.env.SERVER_PORT,
-  SERVER_HOSTNAME: process.env.SERVER_HOSTNAME,
+  LOCAL_SERVER_PORT: process.env.LOCAL_SERVER_PORT,
+  LOCAL_SERVER_HOSTNAME: process.env.LOCAL_SERVER_HOSTNAME,
   SERVER_COOKIE_MAX_AGE: process.env.SERVER_COOKIE_MAX_AGE,
   SERVER_ORIGIN_WHITELIST: process.env.SERVER_ORIGIN_WHITELIST?.split(',') ?? [],
 
@@ -60,8 +60,8 @@ const envValues = {
 };
 
 const envSchema = Joi.object<IEnv>({
-  SERVER_PORT: Joi.number(),
-  SERVER_HOSTNAME: Joi.string().trim().strict(),
+  LOCAL_SERVER_PORT: Joi.number(),
+  LOCAL_SERVER_HOSTNAME: Joi.string().trim().strict(),
   SERVER_COOKIE_MAX_AGE: Joi.string().trim().strict(),
   SERVER_ORIGIN_WHITELIST: Joi.array().items(
     Joi.string()

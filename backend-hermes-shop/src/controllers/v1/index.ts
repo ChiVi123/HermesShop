@@ -1,4 +1,4 @@
-import TestController from '~/controllers/v1/HealthCheckController';
+import TestController from '~/controllers/v1/TestController';
 
 const v1Controllers = [TestController];
 
