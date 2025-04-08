@@ -11,7 +11,7 @@
     "moduleResolution": "node16",
     "outDir": "build",
     "paths": {
-      "@/*": ["./src/*"]
+      "~/*": ["./src/*"]
     },
     "types": ["node", "reflect-metadata"]
   },

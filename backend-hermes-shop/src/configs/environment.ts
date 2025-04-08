@@ -63,7 +63,11 @@ const envSchema = Joi.object<IEnv>({
   SERVER_PORT: Joi.number(),
   SERVER_HOSTNAME: Joi.string().trim().strict(),
   SERVER_COOKIE_MAX_AGE: Joi.string().trim().strict(),
-  SERVER_ORIGIN_WHITELIST: Joi.array().items(Joi.string().uri({ scheme: [/https?/] })),
+  SERVER_ORIGIN_WHITELIST: Joi.array().items(
+    Joi.string()
+      .uri({ scheme: [/https?/] })
+      .allow(''),
+  ),
 
   MONGO_URI: Joi.string().trim().strict(),
   MONGO_DATABASE_NAME: Joi.string().trim().strict(),
