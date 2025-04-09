@@ -36,7 +36,6 @@ class AuthController extends Controller {
   @routeDecorator('post', '/register')
   @validateDecorator(registerOrLoginSchema)
   async register(req: Request, res: Response) {
-    logging('AuthController', this);
     const userCreated = await this.authService.register(req.body);
     res.status(StatusCodes.CREATED).json(userCreated);
   }
