@@ -4,7 +4,7 @@ import { StatusCodes } from '~/configs/statusCode';
 import NextError from '~/helpers/nextError';
 
 function validateDecorator(schema: Joi.ObjectSchema): MethodDecorator {
-  return (_target, propertyKey, descriptor: PropertyDescriptor) => {
+  return (_target, _propertyKey, descriptor: PropertyDescriptor) => {
     const originalHandler = descriptor.value;
 
     descriptor.value = async function (req: Request, res: Response, next: NextFunction) {
@@ -14,7 +14,6 @@ function validateDecorator(schema: Joi.ObjectSchema): MethodDecorator {
         return next(new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error));
       }
       originalHandler.call(this, req, res, next).catch((error: unknown) => {
-        logging(`[${propertyKey.toString()}] error`, error);
         next(error);
       });
     };

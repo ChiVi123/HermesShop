@@ -14,6 +14,8 @@ function defineRoutes(controllers: (typeof Controller)[], application: Express) 
     for (const [method, mapperRoutes] of mapperMethods) {
       for (const [route, handlers] of mapperRoutes) {
         const completePath = baseRoute + route;
+        // function handler need context of classes inherit from class Controller
+        // like properties or methods
         let completeHandlers = handlers.map((fn) => fn.bind(controller));
 
         securityPathConfig.forEach((regexPath) => {
