@@ -21,40 +21,40 @@ const startServer = () => {
     res.set('Cache-Control', 'no-store');
     next();
   });
-  logging('[App] Disable webpage caching');
+  console.log('[App] Disable webpage caching');
 
   app.use(cookieParser());
   app.use(cors(corsOptions));
   app.use(express.json());
-  logging('[App] Added middlewares');
+  console.log('[App] Added middlewares');
 
   defineRoutes(v1Controllers, app);
-  logging('[App] Defined Controller Routing');
+  console.log('[App] Defined Controller Routing');
 
   app.use(routeNotFoundMiddleware);
   app.use(errorHandlingMiddleware);
-  logging('[App] Added error middlewares');
+  console.log('[App] Added error middlewares');
 
   app.listen(env.LOCAL_SERVER_PORT, () => {
-    logging(`[App] Server Started, running http://${env.LOCAL_SERVER_HOSTNAME}:${env.LOCAL_SERVER_PORT}`);
+    console.log(`[App] Server Started, running http://${env.LOCAL_SERVER_HOSTNAME}:${env.LOCAL_SERVER_PORT}`);
   });
 
   AsyncExitHook(() => {
-    logging('[App] Exit');
+    console.log('[App] Exit');
     closeDB();
   });
 };
 
-logging('[App] Mongodb connecting...');
+console.log('[App] Mongodb connecting...');
 
 connectDB()
   .then(() => {
-    logging('[App] Mongodb connected');
+    console.log('[App] Mongodb connected');
   })
   .then(() => {
     startServer();
   })
   .catch((error) => {
-    logging('[App Error]', error);
+    console.log('[App Error]', error);
     process.exit(0);
   });

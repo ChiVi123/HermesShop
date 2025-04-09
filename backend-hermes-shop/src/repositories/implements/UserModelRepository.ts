@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import { ObjectId } from 'mongodb';
+import { ROLE_NAMES } from '~/configs/role';
 import { StatusCodes } from '~/configs/statusCode';
-// import { ROLE_NAMES } from '~/configs/role';
 import { EMAIL_RULE, EMAIL_RULE_MESSAGE, PASSWORD_RULE, PASSWORD_RULE_MESSAGE } from '~/configs/validates';
 import getBaseValidSchema from '~/helpers/getBaseValidSchema';
 import NextError from '~/helpers/nextError';
@@ -15,11 +15,11 @@ const COLLECTION_NAME = 'users';
 const SCHEMA = baseSchema.keys({
   email: Joi.string().required().pattern(EMAIL_RULE).message(EMAIL_RULE_MESSAGE),
   username: Joi.string().required().trim().strict(),
-  // displayName: Joi.string().required().trim().strict(),
+  displayName: Joi.string().required().trim().strict(),
   password: Joi.string().required().pattern(PASSWORD_RULE).message(PASSWORD_RULE_MESSAGE),
-  // role: Joi.string()
-  //   .valid(...Object.values(ROLE_NAMES))
-  //   .default(ROLE_NAMES.USER),
+  role: Joi.string()
+    .valid(...Object.values(ROLE_NAMES))
+    .default(ROLE_NAMES.USER),
 });
 const INVALID_FIELDS: UserModelProperties[] = ['_id', '_destroy', 'createdAt', 'email', 'username'];
 
