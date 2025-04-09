@@ -14,7 +14,7 @@ function validateDecorator(schema: Joi.ObjectSchema): MethodDecorator {
         return next(new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error));
       }
       originalHandler.call(this, req, res, next).catch((error: unknown) => {
-        logging(`[validateDecorator ~ ${propertyKey.toString()}] cached`, error);
+        logging(`[${propertyKey.toString()}] error`, error);
         next(error);
       });
     };
