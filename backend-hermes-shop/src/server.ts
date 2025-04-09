@@ -11,6 +11,8 @@ import env from '~/configs/environment';
 import v1Controllers from '~/controllers/v1';
 import defineRoutes from '~/core/defineRoutes';
 import { closeDB, connectDB } from '~/core/mongodb';
+import errorHandlingMiddleware from '~/middlewares/errorHandling';
+import routeNotFoundMiddleware from '~/middlewares/routeNotFound';
 
 const startServer = () => {
   const app = express();
@@ -28,6 +30,10 @@ const startServer = () => {
 
   defineRoutes(v1Controllers, app);
   logging('[App] Defined Controller Routing');
+
+  app.use(routeNotFoundMiddleware);
+  app.use(errorHandlingMiddleware);
+  logging('[App] Added error middlewares');
 
   app.listen(env.LOCAL_SERVER_PORT, () => {
     logging(`[App] Server Started, running http://${env.LOCAL_SERVER_HOSTNAME}:${env.LOCAL_SERVER_PORT}`);
