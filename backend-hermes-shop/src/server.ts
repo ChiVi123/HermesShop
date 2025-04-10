@@ -6,6 +6,7 @@ import AsyncExitHook from 'async-exit-hook';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
+import slug from 'slug';
 import { corsOptions } from '~/configs/cors';
 import env from '~/configs/environment';
 import v1Controllers from '~/controllers/v1';
@@ -13,6 +14,9 @@ import defineRoutes from '~/core/defineRoutes';
 import { closeDB, connectDB } from '~/core/mongodb';
 import errorHandlingMiddleware from '~/middlewares/errorHandling';
 import routeNotFoundMiddleware from '~/middlewares/routeNotFound';
+
+// config slug charmap
+slug.charmap['/'] = '-';
 
 const startServer = () => {
   const app = express();

@@ -12,7 +12,7 @@ export default defineConfig([
   {
     rules: {
       '@typescript-eslint/consistent-type-imports': 'warn',
-      '@typescript-eslint/method-signature-style': 'error',
+      '@typescript-eslint/method-signature-style': 'off',
       '@typescript-eslint/no-unused-vars': 'warn',
       indent: ['warn', 2],
       semi: [1, 'always'],
