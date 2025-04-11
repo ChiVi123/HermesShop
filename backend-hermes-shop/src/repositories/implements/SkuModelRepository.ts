@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import type { InsertOneResult, WithId } from 'mongodb';
+import type { InsertManyResult, InsertOneResult, WithId } from 'mongodb';
 import { ObjectId } from 'mongodb';
 import { StatusCodes } from '~/configs/statusCode';
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/configs/validates';
@@ -36,33 +36,49 @@ export class SkuModelRepository extends RepositoryMongoDB<SkuModel> implements S
   }
 
   public async create(data: Record<string, unknown>): Promise<InsertOneResult<SkuModel>> {
+    let validData: SkuModel | null = null;
     try {
-      const validData = await this.validateBeforeCreate(data);
-      return this.collectionName.insertOne({ ...validData, productId: new ObjectId(validData.productId) });
+      validData = await this.validateBeforeCreate(data);
     } catch (error) {
       throw new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error);
     }
+
+    return this.collectionName.insertOne({ ...validData, productId: new ObjectId(validData.productId) });
   }
 
-  public async update(id: string, updateData: Record<string, unknown>): Promise<WithId<SkuModel> | null> {
+  public async createMany(dataList: Record<string, unknown>[]): Promise<InsertManyResult<SkuModel>> {
+    const validDataList: SkuModel[] = [];
+    try {
+      for (const data of dataList) {
+        const validData = await this.validateBeforeCreate(data);
+        validDataList.push({ ...validData, productId: new ObjectId(validData.productId) });
+      }
+    } catch (error) {
+      throw new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error);
+    }
+
+    return this.collectionName.insertMany(validDataList);
+  }
+
+  public async update(skuId: string, updateData: Record<string, unknown>): Promise<WithId<SkuModel> | null> {
     this.removeInvalidFields(updateData);
 
     return this.collectionName.findOneAndUpdate(
-      { _id: new ObjectId(id) },
+      { _id: new ObjectId(skuId) },
       { $set: updateData },
       { returnDocument: 'after' },
     );
   }
 
-  public async findOneById(id: string | ObjectId): Promise<WithId<SkuModel> | null> {
-    return this.collectionName.findOne({ _id: new ObjectId(id) });
+  public async findOneById(skuId: ModelId): Promise<WithId<SkuModel> | null> {
+    return this.collectionName.findOne({ _id: new ObjectId(skuId) });
   }
 
   public async findOneBySlugify(slugify: string): Promise<WithId<SkuModel> | null> {
     return this.collectionName.findOne({ slugify });
   }
 
-  public async destroyById(id: ModelId): Promise<WithId<SkuModel> | null> {
-    return this.collectionName.findOneAndDelete({ _id: new ObjectId(id) });
+  public async destroyById(skuId: ModelId): Promise<WithId<SkuModel> | null> {
+    return this.collectionName.findOneAndDelete({ _id: new ObjectId(skuId) });
   }
 }

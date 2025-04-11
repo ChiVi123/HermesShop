@@ -1,6 +1,6 @@
-import type { ObjectId, WithId } from 'mongodb';
+import type { WithId } from 'mongodb';
 import type { Image } from '~/models/imageModel';
-import type { Model, ModelResponse } from '~/models/model';
+import type { Model, ModelArrayId, ModelId, ModelResponse } from '~/models/model';
 
 export interface ProductModel extends Model {
   name: string;
@@ -9,10 +9,10 @@ export interface ProductModel extends Model {
   rating: number;
   gender: string;
   attrs: ProductAttr[];
-  skuIds: (string | ObjectId)[];
+  skuIds: ModelArrayId;
 }
 export interface SkuModel extends Model {
-  productId: string | ObjectId;
+  productId: ModelId;
   name: string;
   slugify: string;
   price: number;

@@ -39,10 +39,9 @@ class ProductController extends Controller {
   public async create(req: Request<unknown, unknown, ProductReqBody>, res: Response) {
     const { skus, ...data } = req.body;
     const createdProduct = (await this.productService.create(data))!;
-    const insertedOneResults = await this.skuService.create(createdProduct._id.toString(), skus);
-    const updatedProduct = await this.productService.pushSkuIds(createdProduct._id, insertedOneResults);
+    const result = await this.skuService.createMany(createdProduct._id.toString(), skus);
 
-    res.status(StatusCodes.CREATED).json(updatedProduct);
+    res.status(StatusCodes.CREATED).json(result);
   }
 
   @routeDecorator('patch', '/:id')

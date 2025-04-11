@@ -1,9 +1,8 @@
 import type { Request } from 'express';
-import type { InsertOneResult, ObjectId } from 'mongodb';
 import slug from 'slug';
 import { StatusCodes } from '~/configs/statusCode';
 import NextError from '~/helpers/nextError';
-import type { ProductReqBody, SkuModel } from '~/models/productModel';
+import type { ProductReqBody } from '~/models/productModel';
 import { cloudinaryProvider } from '~/providers/cloudinaryProvider';
 import { ProductModelRepository } from '~/repositories/implements/ProductModelRepository';
 import { SkuModelRepository } from '~/repositories/implements/SkuModelRepository';
@@ -41,13 +40,6 @@ export class ProductService {
     return this.productModel.update(id, data);
   }
 
-  public async pushSkuIds(productId: string | ObjectId, insertedOneResults: InsertOneResult<SkuModel>[]) {
-    return this.productModel.pushSkuIds(
-      productId,
-      insertedOneResults.map((item) => item.insertedId),
-    );
-  }
-
   public async destroyById(id: string) {
     const deletedProduct = await this.productModel.destroyById(id);
     if (!deletedProduct) throw new NextError(StatusCodes.NOT_FOUND, 'Product not found!');
@@ -56,11 +48,10 @@ export class ProductService {
     const deleteSkus = await Promise.all(deletedSkuPromises);
 
     for (const sku of deleteSkus) {
-      if (!sku) continue;
-      if (!sku?.images) continue;
-
-      const publicIds = sku.images.map((item) => item.publicId);
-      await cloudinaryProvider.deleteAssetArray(publicIds);
+      if (sku && sku?.images) {
+        const publicIds = sku.images.map((item) => item.publicId);
+        await cloudinaryProvider.deleteAssetArray(publicIds);
+      }
     }
 
     return { deleteResult: 'Product and its Skus deleted successfully!' };

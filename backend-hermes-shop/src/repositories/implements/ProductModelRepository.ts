@@ -55,24 +55,24 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
     );
   }
 
-  public async pushSkuIds(id: ModelId, skuIds: ObjectId[]): Promise<WithId<ProductModel> | null> {
+  public async pushSkuIds(productId: ModelId, skuIds: ModelId[]): Promise<WithId<ProductModel> | null> {
     return this.collectionName.findOneAndUpdate(
-      { _id: new ObjectId(id) },
+      { _id: new ObjectId(productId) },
       { $push: { skuIds: { $each: skuIds } } },
       { returnDocument: 'after' },
     );
   }
 
-  public async pullSkuIds(id: ModelId, skuIds: ObjectId[]): Promise<WithId<ProductModel> | null> {
+  public async pullSkuIds(productId: ModelId, skuIds: ObjectId[]): Promise<WithId<ProductModel> | null> {
     return this.collectionName.findOneAndUpdate(
-      { _id: new ObjectId(id) },
+      { _id: new ObjectId(productId) },
       { $pull: { skuIds: { $each: skuIds } } },
       { returnDocument: 'after' },
     );
   }
 
-  public findOneById(id: ModelId): Promise<WithId<ProductModel> | null> {
-    return this.collectionName.findOne({ _id: new ObjectId(id) });
+  public findOneById(productId: ModelId): Promise<WithId<ProductModel> | null> {
+    return this.collectionName.findOne({ _id: new ObjectId(productId) });
   }
 
   public findOneByName(name: string): Promise<WithId<ProductModel> | null> {
@@ -97,7 +97,7 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
     return result[0] ?? null;
   }
 
-  public destroyById(id: ModelId): Promise<WithId<ProductModel> | null> {
-    return this.collectionName.findOneAndDelete({ _id: new ObjectId(id) });
+  public destroyById(productId: ModelId): Promise<WithId<ProductModel> | null> {
+    return this.collectionName.findOneAndDelete({ _id: new ObjectId(productId) });
   }
 }

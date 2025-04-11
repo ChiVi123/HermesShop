@@ -6,4 +6,5 @@ export interface Model {
   _destroy: boolean;
 }
 export type ModelId = string | ObjectId;
+export type ModelArrayId = string[] | ObjectId[];
 export type ModelResponse = Omit<Model, '_destroy'>;
