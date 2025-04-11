@@ -1,4 +1,5 @@
 import type { ObjectId, WithId } from 'mongodb';
+import { Image } from '~/models/imageModel';
 import type { Model, ModelResponse } from '~/models/model';
 
 export interface ProductModel extends Model {
@@ -16,6 +17,7 @@ export interface SkuModel extends Model {
   slugify: string;
   price: number;
   discountPrice: number;
+  images: Image[];
   attrs: SkuAttr[];
 }
 export interface ProductAttr {
@@ -35,5 +37,6 @@ export type ProductReqBody = {
   attrs: { key: string; type: string }[];
   skus: { name: string; price: number; discountPrice: number; attrs: { key: string; value: string }[] }[];
 };
+
 export type ProductModelProperties = keyof WithId<ProductModel>;
 export type SkuModelProperties = keyof WithId<SkuModel>;

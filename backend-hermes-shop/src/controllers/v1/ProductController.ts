@@ -4,10 +4,12 @@ import Controller from '~/controllers/Controller';
 import controllerDecorator from '~/decorators/controllerDecorator';
 import routeDecorator from '~/decorators/routeDecorator';
 import validateDecorator from '~/decorators/validateDecorator';
+import { multerMiddleware } from '~/middlewares/multerMiddleware';
 import type { ProductReqBody } from '~/models/productModel';
 import { ProductService } from '~/services/ProductService';
 import { SkuService } from '~/services/SkuService';
-import { productSchema } from '~/validates/productValidate';
+import { createProductValidate } from '~/validates/productValidate';
+import { skuValidate } from '~/validates/skuValidate';
 
 @controllerDecorator('/v1/products')
 class ProductController extends Controller {
@@ -21,37 +23,49 @@ class ProductController extends Controller {
   }
 
   @routeDecorator('get', '/all')
-  async getAll(_req: Request, res: Response) {
+  public async getAll(_req: Request, res: Response) {
     const result = await this.productService.getAll();
-    console.log('product controller', result);
-
     res.status(StatusCodes.OK).json(result);
   }
 
   @routeDecorator('get', '/:slugify')
-  async getDetail(req: Request, res: Response) {
+  public async getDetail(req: Request, res: Response) {
     const result = await this.productService.getDetail(req.params.slugify);
-    console.log('🚀 ~ ProductController ~ getDetail ~ result:', result);
-
     res.status(StatusCodes.OK).json(result);
   }
 
   @routeDecorator('post', '/new')
-  @validateDecorator(productSchema)
-  async create(req: Request<unknown, unknown, ProductReqBody>, res: Response) {
+  @validateDecorator(createProductValidate)
+  public async create(req: Request<unknown, unknown, ProductReqBody>, res: Response) {
     const { skus, ...data } = req.body;
-    const productCreated = (await this.productService.create(data))!;
-    const insertedOneResults = await this.skuService.create(productCreated._id.toString(), skus);
-    const productUpdated = await this.productService.pushSkuIds(productCreated._id, insertedOneResults);
+    const createdProduct = (await this.productService.create(data))!;
+    const insertedOneResults = await this.skuService.create(createdProduct._id.toString(), skus);
+    const updatedProduct = await this.productService.pushSkuIds(createdProduct._id, insertedOneResults);
 
-    res.status(StatusCodes.CREATED).json(productUpdated);
+    res.status(StatusCodes.CREATED).json(updatedProduct);
   }
 
-  @routeDecorator('delete', '/destroy-all')
-  async destroyAll(_req: Request, res: Response) {
-    const productDestroyResult = await this.productService.destroyAll();
-    const skuDestroyResult = await this.skuService.destroyAll();
-    res.status(StatusCodes.CREATED).json({ productDestroyResult, skuDestroyResult });
+  @routeDecorator('patch', '/:id')
+  @validateDecorator(createProductValidate)
+  public async updateProduct(req: Request, res: Response) {
+    const productId = req.params.id;
+    const updatedProduct = await this.productService.update(productId, req.body);
+    res.status(StatusCodes.OK).json(updatedProduct);
+  }
+
+  @routeDecorator('patch', '/sku/:id', multerMiddleware.upload.array('images'))
+  @validateDecorator(skuValidate)
+  public async updateSku(req: Request, res: Response) {
+    const skuId = req.params.id;
+    const updatedSku = await this.skuService.update(skuId, req.body, req.files);
+    res.status(StatusCodes.OK).json(updatedSku);
+  }
+
+  @routeDecorator('delete', '/:id')
+  public async destroyProduct(req: Request, res: Response) {
+    const productId = req.params.id;
+    const result = await this.productService.destroyById(productId);
+    res.status(StatusCodes.OK).json(result);
   }
 }
 

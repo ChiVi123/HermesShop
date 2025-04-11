@@ -1,11 +1,13 @@
 import 'dotenv/config';
 
 import Joi from 'joi';
+import { clone } from 'lodash';
 import type { StringValue } from 'ms';
 
-interface IEnv {
+interface Environment {
   LOCAL_SERVER_PORT: number;
   LOCAL_SERVER_HOSTNAME: string;
+
   SERVER_COOKIE_MAX_AGE: StringValue;
   SERVER_ORIGIN_WHITELIST: string[];
 
@@ -17,15 +19,19 @@ interface IEnv {
 
   REFRESH_TOKEN_SECRET_SIGNATURE: string;
   REFRESH_TOKEN_LIFE: StringValue;
+
+  CLOUDINARY_CLOUD_NAME: string;
+  CLOUDINARY_API_KEY: string;
+  CLOUDINARY_API_SECRET: string;
 }
-interface IEnvMongo {
+interface EnvironmentMongo {
   MONGO_USERNAME: string;
   MONGO_PASSWORD: string;
   MONGO_CLUSTER_NAME: string;
 }
 
 // -----------------------
-const envMongoSchema = Joi.object<IEnvMongo>({
+const envMongoSchema = Joi.object<EnvironmentMongo>({
   MONGO_USERNAME: Joi.string().trim().strict(),
   MONGO_PASSWORD: Joi.string().trim().strict(),
   MONGO_CLUSTER_NAME: Joi.string().trim().strict(),
@@ -57,9 +63,13 @@ const envValues = {
 
   REFRESH_TOKEN_SECRET_SIGNATURE: process.env.REFRESH_TOKEN_SECRET_SIGNATURE,
   REFRESH_TOKEN_LIFE: process.env.REFRESH_TOKEN_LIFE,
+
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
 };
 
-const envSchema = Joi.object<IEnv>({
+const envSchema = Joi.object<Environment>({
   LOCAL_SERVER_PORT: Joi.number(),
   LOCAL_SERVER_HOSTNAME: Joi.string().trim().strict(),
   SERVER_COOKIE_MAX_AGE: Joi.string().trim().strict(),
@@ -77,12 +87,16 @@ const envSchema = Joi.object<IEnv>({
 
   REFRESH_TOKEN_SECRET_SIGNATURE: Joi.string().trim().strict(),
   REFRESH_TOKEN_LIFE: Joi.string().trim().strict(),
+
+  CLOUDINARY_CLOUD_NAME: Joi.string().trim().strict(),
+  CLOUDINARY_API_KEY: Joi.string().trim().strict(),
+  CLOUDINARY_API_SECRET: Joi.string().trim().strict(),
 });
 
 const envValidated = envSchema.validate(envValues);
 
 if (envValidated.error) throw envValidated.error;
 
-const env = { ...envValidated.value };
+const env = clone(envValidated.value);
 
 export default env;

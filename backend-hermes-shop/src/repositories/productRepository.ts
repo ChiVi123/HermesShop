@@ -1,4 +1,5 @@
 import type { Document, InsertOneResult, ObjectId, WithId } from 'mongodb';
+import { ModelId } from '~/models/model';
 
 interface ProductRepository<T> {
   create(data: Record<string, unknown>): Promise<InsertOneResult<T>>;
@@ -8,6 +9,7 @@ interface ProductRepository<T> {
   findOneById(id: string | ObjectId): Promise<WithId<T> | null>;
   findOneByName(name: string): Promise<WithId<T> | null>;
   getDetailsBySlugify(slugify: string): Promise<Document | null>;
+  destroyById(id: ModelId): Promise<WithId<T> | null>;
 }
 
 export type { ProductRepository };

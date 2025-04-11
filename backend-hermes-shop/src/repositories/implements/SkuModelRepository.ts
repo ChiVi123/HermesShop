@@ -1,10 +1,11 @@
 import Joi from 'joi';
-import type { DeleteResult, InsertOneResult, WithId } from 'mongodb';
+import type { InsertOneResult, WithId } from 'mongodb';
 import { ObjectId } from 'mongodb';
 import { StatusCodes } from '~/configs/statusCode';
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/configs/validates';
 import getBaseValidSchema from '~/helpers/getBaseValidSchema';
 import NextError from '~/helpers/nextError';
+import { ModelId } from '~/models/model';
 import type { SkuAttr, SkuModel, SkuModelProperties } from '~/models/productModel';
 import { RepositoryMongoDB } from '~/repositories/RepositoryMongoDB';
 import type { SkuRepository } from '~/repositories/skuRepository';
@@ -61,7 +62,7 @@ export class SkuModelRepository extends RepositoryMongoDB<SkuModel> implements S
     return this.collectionName.findOne({ slugify });
   }
 
-  public destroyAll(): Promise<DeleteResult> {
-    return this.collectionName.deleteMany();
+  public async destroyById(id: ModelId): Promise<WithId<SkuModel> | null> {
+    return this.collectionName.findOneAndDelete({ _id: new ObjectId(id) });
   }
 }

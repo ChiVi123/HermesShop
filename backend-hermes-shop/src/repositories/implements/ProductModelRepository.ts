@@ -1,10 +1,11 @@
 import Joi from 'joi';
-import type { DeleteResult, Document, InsertOneResult, WithId } from 'mongodb';
+import type { Document, InsertOneResult, WithId } from 'mongodb';
 import { ObjectId } from 'mongodb';
 import { StatusCodes } from '~/configs/statusCode';
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/configs/validates';
 import getBaseValidSchema from '~/helpers/getBaseValidSchema';
 import NextError from '~/helpers/nextError';
+import { ModelId } from '~/models/model';
 import type { ProductAttr, ProductModel, ProductModelProperties } from '~/models/productModel';
 import { RepositoryMongoDB } from '~/repositories/RepositoryMongoDB';
 import type { ProductRepository } from '~/repositories/productRepository';
@@ -54,7 +55,7 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
     );
   }
 
-  public async pushSkuIds(id: string | ObjectId, skuIds: ObjectId[]): Promise<WithId<ProductModel> | null> {
+  public async pushSkuIds(id: ModelId, skuIds: ObjectId[]): Promise<WithId<ProductModel> | null> {
     return this.collectionName.findOneAndUpdate(
       { _id: new ObjectId(id) },
       { $push: { skuIds: { $each: skuIds } } },
@@ -62,7 +63,7 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
     );
   }
 
-  public async pullSkuIds(id: string | ObjectId, skuIds: ObjectId[]): Promise<WithId<ProductModel> | null> {
+  public async pullSkuIds(id: ModelId, skuIds: ObjectId[]): Promise<WithId<ProductModel> | null> {
     return this.collectionName.findOneAndUpdate(
       { _id: new ObjectId(id) },
       { $pull: { skuIds: { $each: skuIds } } },
@@ -70,7 +71,7 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
     );
   }
 
-  public findOneById(id: string | ObjectId): Promise<WithId<ProductModel> | null> {
+  public findOneById(id: ModelId): Promise<WithId<ProductModel> | null> {
     return this.collectionName.findOne({ _id: new ObjectId(id) });
   }
 
@@ -96,7 +97,7 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
     return result[0] ?? null;
   }
 
-  public destroyAll(): Promise<DeleteResult> {
-    return this.collectionName.deleteMany();
+  public destroyById(id: ModelId): Promise<WithId<ProductModel> | null> {
+    return this.collectionName.findOneAndDelete({ _id: new ObjectId(id) });
   }
 }
