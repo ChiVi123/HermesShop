@@ -1,5 +1,5 @@
-import { UploadApiResponse } from 'cloudinary';
-import { Image } from '~/models/imageModel';
+import type { UploadApiResponse } from 'cloudinary';
+import type { Image } from '~/models/imageModel';
 
 export function createImage(upload: UploadApiResponse, thumbnail?: boolean): Image {
   const date = new Date(upload.created_at);

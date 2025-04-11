@@ -1,4 +1,5 @@
-import cloudinary, { UploadApiResponse } from 'cloudinary';
+import type { UploadApiResponse } from 'cloudinary';
+import cloudinary from 'cloudinary';
 import streamifier from 'streamifier';
 import env from '~/configs/environment';
 

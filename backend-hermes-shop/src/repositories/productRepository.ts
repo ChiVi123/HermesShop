@@ -1,5 +1,5 @@
 import type { Document, InsertOneResult, ObjectId, WithId } from 'mongodb';
-import { ModelId } from '~/models/model';
+import type { ModelId } from '~/models/model';
 
 interface ProductRepository<T> {
   create(data: Record<string, unknown>): Promise<InsertOneResult<T>>;

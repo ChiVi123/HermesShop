@@ -5,7 +5,7 @@ import { StatusCodes } from '~/configs/statusCode';
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/configs/validates';
 import getBaseValidSchema from '~/helpers/getBaseValidSchema';
 import NextError from '~/helpers/nextError';
-import { ModelId } from '~/models/model';
+import type { ModelId } from '~/models/model';
 import type { SkuAttr, SkuModel, SkuModelProperties } from '~/models/productModel';
 import { RepositoryMongoDB } from '~/repositories/RepositoryMongoDB';
 import type { SkuRepository } from '~/repositories/skuRepository';

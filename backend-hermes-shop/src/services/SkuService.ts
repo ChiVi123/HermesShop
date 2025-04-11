@@ -4,7 +4,7 @@ import { createImage } from '~/helpers/createImage';
 import type { ProductReqBody, SkuModel } from '~/models/productModel';
 import { cloudinaryProvider } from '~/providers/cloudinaryProvider';
 import { SkuModelRepository } from '~/repositories/implements/SkuModelRepository';
-import { MulterManyFile } from '~/types/requestMulter';
+import type { MulterManyFile } from '~/types/requestMulter';
 
 export class SkuService {
   private skuModel: SkuModelRepository;

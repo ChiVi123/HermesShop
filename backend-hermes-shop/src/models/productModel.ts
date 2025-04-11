@@ -1,5 +1,5 @@
 import type { ObjectId, WithId } from 'mongodb';
-import { Image } from '~/models/imageModel';
+import type { Image } from '~/models/imageModel';
 import type { Model, ModelResponse } from '~/models/model';
 
 export interface ProductModel extends Model {

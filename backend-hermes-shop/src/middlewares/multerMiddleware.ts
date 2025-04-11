@@ -1,5 +1,6 @@
-import { Request } from 'express';
-import multer, { FileFilterCallback } from 'multer';
+import type { Request } from 'express';
+import type { FileFilterCallback } from 'multer';
+import multer from 'multer';
 import { StatusCodes } from '~/configs/statusCode';
 import { ALLOW_COMMON_FILE_TYPES, ALLOW_COMMON_FILE_TYPES_MESSAGE, LIMIT_COMMON_FILE_SIZE } from '~/configs/validates';
 import NextError from '~/helpers/nextError';
