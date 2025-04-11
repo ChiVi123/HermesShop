@@ -17,7 +17,7 @@ export abstract class RepositoryMongoDB<T extends Document> {
     this.validSchema = schema;
   }
 
-  public get collectionName(): Collection<T> {
+  public get collection(): Collection<T> {
     return getDB().collection<T>(this.name);
   }
 

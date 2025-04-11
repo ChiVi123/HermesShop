@@ -19,7 +19,7 @@ export class ProductService {
   }
 
   public getAll() {
-    return this.productModel.collectionName.find().toArray();
+    return this.productModel.collection.find().toArray();
   }
 
   public async getDetail(slugify: string) {

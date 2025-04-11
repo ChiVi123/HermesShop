@@ -1,6 +1,7 @@
 import Joi from 'joi';
 import type { InsertManyResult, InsertOneResult, WithId } from 'mongodb';
 import { ObjectId } from 'mongodb';
+import { COLLECTION_NAME_KEYS } from '~/configs/collectionNameKeys';
 import { StatusCodes } from '~/configs/statusCode';
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/configs/validates';
 import getBaseValidSchema from '~/helpers/getBaseValidSchema';
@@ -12,7 +13,6 @@ import type { SkuRepository } from '~/repositories/skuRepository';
 
 const baseSkuSchema = getBaseValidSchema<SkuModel>();
 
-const COLLECTION_NAME = 'skus';
 const SCHEMA = baseSkuSchema.keys({
   productId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
   name: Joi.string().required().trim().strict(),
@@ -32,7 +32,7 @@ const INVALID_FIELDS: SkuModelProperties[] = ['_id', '_destroy', 'createdAt'];
 
 export class SkuModelRepository extends RepositoryMongoDB<SkuModel> implements SkuRepository<SkuModel> {
   constructor() {
-    super(COLLECTION_NAME, SCHEMA, { invalidFields: INVALID_FIELDS });
+    super(COLLECTION_NAME_KEYS.SKUS, SCHEMA, { invalidFields: INVALID_FIELDS });
   }
 
   public async create(data: Record<string, unknown>): Promise<InsertOneResult<SkuModel>> {
@@ -43,7 +43,7 @@ export class SkuModelRepository extends RepositoryMongoDB<SkuModel> implements S
       throw new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error);
     }
 
-    return this.collectionName.insertOne({ ...validData, productId: new ObjectId(validData.productId) });
+    return this.collection.insertOne({ ...validData, productId: new ObjectId(validData.productId) });
   }
 
   public async createMany(dataList: Record<string, unknown>[]): Promise<InsertManyResult<SkuModel>> {
@@ -57,13 +57,13 @@ export class SkuModelRepository extends RepositoryMongoDB<SkuModel> implements S
       throw new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error);
     }
 
-    return this.collectionName.insertMany(validDataList);
+    return this.collection.insertMany(validDataList);
   }
 
   public async update(skuId: string, updateData: Record<string, unknown>): Promise<WithId<SkuModel> | null> {
     this.removeInvalidFields(updateData);
 
-    return this.collectionName.findOneAndUpdate(
+    return this.collection.findOneAndUpdate(
       { _id: new ObjectId(skuId) },
       { $set: updateData },
       { returnDocument: 'after' },
@@ -71,14 +71,14 @@ export class SkuModelRepository extends RepositoryMongoDB<SkuModel> implements S
   }
 
   public async findOneById(skuId: ModelId): Promise<WithId<SkuModel> | null> {
-    return this.collectionName.findOne({ _id: new ObjectId(skuId) });
+    return this.collection.findOne({ _id: new ObjectId(skuId) });
   }
 
   public async findOneBySlugify(slugify: string): Promise<WithId<SkuModel> | null> {
-    return this.collectionName.findOne({ slugify });
+    return this.collection.findOne({ slugify });
   }
 
   public async destroyById(skuId: ModelId): Promise<WithId<SkuModel> | null> {
-    return this.collectionName.findOneAndDelete({ _id: new ObjectId(skuId) });
+    return this.collection.findOneAndDelete({ _id: new ObjectId(skuId) });
   }
 }

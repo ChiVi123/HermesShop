@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import { ObjectId } from 'mongodb';
+import { COLLECTION_NAME_KEYS } from '~/configs/collectionNameKeys';
 import { ROLE_NAMES } from '~/configs/role';
 import { StatusCodes } from '~/configs/statusCode';
 import { EMAIL_RULE, EMAIL_RULE_MESSAGE, PASSWORD_RULE, PASSWORD_RULE_MESSAGE } from '~/configs/validates';
@@ -11,7 +12,6 @@ import type { UserRepository } from '~/repositories/userRepository';
 
 const baseSchema = getBaseValidSchema<UserModel>();
 
-const COLLECTION_NAME = 'users';
 const SCHEMA = baseSchema.keys({
   email: Joi.string().required().pattern(EMAIL_RULE).message(EMAIL_RULE_MESSAGE),
   username: Joi.string().required().trim().strict(),
@@ -25,23 +25,23 @@ const INVALID_FIELDS: UserModelProperties[] = ['_id', '_destroy', 'createdAt', '
 
 export class UserModelRepository extends RepositoryMongoDB<UserModel> implements UserRepository<UserModel> {
   constructor() {
-    super(COLLECTION_NAME, SCHEMA, { invalidFields: INVALID_FIELDS });
+    super(COLLECTION_NAME_KEYS.USERS, SCHEMA, { invalidFields: INVALID_FIELDS });
   }
 
   public async create(data: Record<string, unknown>) {
     try {
       const validData = await this.validateBeforeCreate(data);
-      return this.collectionName.insertOne(validData);
+      return this.collection.insertOne(validData);
     } catch (error) {
       throw new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error);
     }
   }
 
   public findOneById(id: string | ObjectId) {
-    return this.collectionName.findOne({ _id: new ObjectId(id) });
+    return this.collection.findOne({ _id: new ObjectId(id) });
   }
 
   public findOneByEmail(email: string) {
-    return this.collectionName.findOne({ email });
+    return this.collection.findOne({ email });
   }
 }
