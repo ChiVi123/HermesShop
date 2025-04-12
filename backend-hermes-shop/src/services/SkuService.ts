@@ -36,9 +36,9 @@ export class SkuService {
       const buffers = files.map((item) => item.buffer);
       const uploadManyImageResult = await cloudinaryProvider.streamUploadArray(buffers, '/hermes-shop/products');
       const images = uploadManyImageResult.filter(Boolean).map((upload) => createImage(upload!));
-      return this.skuRepository.update(id, { images });
+      return this.skuRepository.findOneAndUpdateById(id, { images });
     }
 
-    return this.skuRepository.update(id, data);
+    return this.skuRepository.findOneAndUpdateById(id, data);
   }
 }

@@ -1,6 +1,6 @@
 import type { WithId } from 'mongodb';
 import type { RoleName } from '~/configs/role';
-import type { Model, ModelResponse } from '~/models/model';
+import type { Model, ModelResponse } from '~/core/model/types';
 
 export interface UserModel extends Model {
   email: string;

@@ -19,12 +19,12 @@ export class CategoryService {
     const existCategory = await this.categoryRepository.findOneByName(data.name);
     if (existCategory) throw new NextError(StatusCodes.CONFLICT, 'Category already exists!');
 
-    const insertedOneResult = await this.categoryRepository.create({ ...data, slugify: slug(data.name) });
+    const insertedOneResult = await this.categoryRepository.insertOne({ ...data, slugify: slug(data.name) });
     return this.categoryRepository.findOneById(insertedOneResult.insertedId);
   }
 
   public async update(id: string, data: { name: string } & Record<string, unknown>) {
-    const updatedCategory = await this.categoryRepository.update(id, {
+    const updatedCategory = await this.categoryRepository.findOneAndUpdateById(id, {
       ...data,
       slugify: slug(data.name),
       updatedAt: Date.now(),

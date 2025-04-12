@@ -1,12 +1,13 @@
 import Joi from 'joi';
+import type { InsertOneResult } from 'mongodb';
 import { COLLECTION_NAME_KEYS } from '~/configs/collectionNameKeys';
 import { ROLE_NAMES } from '~/configs/role';
 import { StatusCodes } from '~/configs/statusCode';
 import { EMAIL_RULE, EMAIL_RULE_MESSAGE, PASSWORD_RULE, PASSWORD_RULE_MESSAGE } from '~/configs/validates';
+import { RepositoryMongoDB } from '~/core/repository/RepositoryMongoDB';
 import getBaseValidSchema from '~/helpers/getBaseValidSchema';
 import NextError from '~/helpers/nextError';
 import type { UserModel, UserModelProperties } from '~/models/userModel';
-import { RepositoryMongoDB } from '~/repositories/RepositoryMongoDB';
 import type { UserRepository } from '~/repositories/userRepository';
 
 const baseSchema = getBaseValidSchema<UserModel>();
@@ -27,17 +28,17 @@ export class UserModelRepository extends RepositoryMongoDB<UserModel> implements
     super(COLLECTION_NAME_KEYS.USERS, SCHEMA, { invalidFields: INVALID_FIELDS });
   }
 
-  public async create(data: Record<string, unknown>) {
-    let validData: UserModel | null = null;
+  public findOneByEmail(email: string) {
+    return this.collection.findOne({ email });
+  }
+
+  public async insertOne(data: Record<string, unknown>): Promise<InsertOneResult<UserModel>> {
+    let validatedData: UserModel | null = null;
     try {
-      validData = await this.validateBeforeCreate(data);
+      validatedData = await this.validateBeforeCreate(data);
     } catch (error) {
       throw new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error);
     }
-    return this.collection.insertOne(validData);
-  }
-
-  public findOneByEmail(email: string) {
-    return this.collection.findOne({ email });
+    return this.collection.insertOne(validatedData);
   }
 }

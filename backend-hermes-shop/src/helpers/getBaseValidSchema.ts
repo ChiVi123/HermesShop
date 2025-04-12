@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import type { Model } from '~/models/model';
+import type { Model } from '~/core/model/types';
 
 const getBaseValidSchema = <T extends Model>(): Joi.ObjectSchema<T> => {
   return Joi.object<T>({
