@@ -2,7 +2,7 @@ import type { ObjectId } from 'mongodb';
 
 export interface Model {
   createdAt: number;
-  updatedAt: number | null;
+  updatedAt: number;
   _hidden: boolean;
 }
 
