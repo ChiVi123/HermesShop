@@ -8,7 +8,7 @@ import NextError from '~/helpers/nextError';
 import type { CategoryModel, CategoryModelProperties } from '~/models/categoryModel';
 import type { ModelId } from '~/models/model';
 import { RepositoryMongoDB } from '~/repositories/RepositoryMongoDB';
-import type { categoryRepository } from '~/repositories/categoryRepository';
+import type { CategoryRepository } from '~/repositories/categoryRepository';
 
 const baseSkuSchema = getBaseValidSchema<CategoryModel>();
 
@@ -20,14 +20,10 @@ const INVALID_FIELDS: CategoryModelProperties[] = ['_id', '_destroy', 'createdAt
 
 export class CategoryModelRepository
   extends RepositoryMongoDB<CategoryModel>
-  implements categoryRepository<CategoryModel>
+  implements CategoryRepository<CategoryModel>
 {
   constructor() {
     super(COLLECTION_NAME_KEYS.CATEGORIES, SCHEMA, { invalidFields: INVALID_FIELDS });
-  }
-
-  public async findOneById(categoryId: ModelId): Promise<WithId<CategoryModel> | null> {
-    return this.collection.findOne({ _id: new ObjectId(categoryId) });
   }
 
   public async findOneByName(name: string): Promise<WithId<CategoryModel> | null> {
@@ -45,13 +41,11 @@ export class CategoryModelRepository
     } catch (error) {
       throw new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error);
     }
-
     return this.collection.insertOne({ ...validData });
   }
 
   public async update(categoryId: ModelId, updateData: Record<string, unknown>): Promise<WithId<CategoryModel> | null> {
     this.removeInvalidFields(updateData);
-
     return this.collection.findOneAndUpdate(
       { _id: new ObjectId(categoryId) },
       { $set: updateData },

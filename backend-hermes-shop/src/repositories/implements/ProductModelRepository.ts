@@ -37,17 +37,17 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
   }
 
   public async create(data: Record<string, unknown>): Promise<InsertOneResult<ProductModel>> {
+    let validData: ProductModel | null = null;
     try {
-      const validData = await this.validateBeforeCreate(data);
-      return this.collection.insertOne(validData);
+      validData = await this.validateBeforeCreate(data);
     } catch (error) {
       throw new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error);
     }
+    return this.collection.insertOne(validData);
   }
 
   public async update(id: string, updateData: Record<string, unknown>): Promise<WithId<ProductModel> | null> {
     this.removeInvalidFields(updateData);
-
     return this.collection.findOneAndUpdate(
       { _id: new ObjectId(id) },
       { $set: updateData },
@@ -69,10 +69,6 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
       { $pull: { skuIds: { $each: skuIds } } },
       { returnDocument: 'after' },
     );
-  }
-
-  public findOneById(productId: ModelId): Promise<WithId<ProductModel> | null> {
-    return this.collection.findOne({ _id: new ObjectId(productId) });
   }
 
   public findOneByName(name: string): Promise<WithId<ProductModel> | null> {

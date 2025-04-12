@@ -1,5 +1,4 @@
 import Joi from 'joi';
-import { ObjectId } from 'mongodb';
 import { COLLECTION_NAME_KEYS } from '~/configs/collectionNameKeys';
 import { ROLE_NAMES } from '~/configs/role';
 import { StatusCodes } from '~/configs/statusCode';
@@ -29,16 +28,13 @@ export class UserModelRepository extends RepositoryMongoDB<UserModel> implements
   }
 
   public async create(data: Record<string, unknown>) {
+    let validData: UserModel | null = null;
     try {
-      const validData = await this.validateBeforeCreate(data);
-      return this.collection.insertOne(validData);
+      validData = await this.validateBeforeCreate(data);
     } catch (error) {
       throw new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error);
     }
-  }
-
-  public findOneById(id: string | ObjectId) {
-    return this.collection.findOne({ _id: new ObjectId(id) });
+    return this.collection.insertOne(validData);
   }
 
   public findOneByEmail(email: string) {

@@ -42,7 +42,6 @@ export class SkuModelRepository extends RepositoryMongoDB<SkuModel> implements S
     } catch (error) {
       throw new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error);
     }
-
     return this.collection.insertOne({ ...validData, productId: new ObjectId(validData.productId) });
   }
 
@@ -62,16 +61,11 @@ export class SkuModelRepository extends RepositoryMongoDB<SkuModel> implements S
 
   public async update(skuId: string, updateData: Record<string, unknown>): Promise<WithId<SkuModel> | null> {
     this.removeInvalidFields(updateData);
-
     return this.collection.findOneAndUpdate(
       { _id: new ObjectId(skuId) },
       { $set: updateData },
       { returnDocument: 'after' },
     );
-  }
-
-  public async findOneById(skuId: ModelId): Promise<WithId<SkuModel> | null> {
-    return this.collection.findOne({ _id: new ObjectId(skuId) });
   }
 
   public async findOneBySlugify(slugify: string): Promise<WithId<SkuModel> | null> {
