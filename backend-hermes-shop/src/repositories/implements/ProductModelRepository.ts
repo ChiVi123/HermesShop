@@ -4,11 +4,11 @@ import { ObjectId } from 'mongodb';
 import { COLLECTION_NAME_KEYS } from '~/configs/collectionNameKeys';
 import { StatusCodes } from '~/configs/statusCode';
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/configs/validates';
+import type { ModelId } from '~/core/model/types';
+import { RepositoryMongoDB } from '~/core/repository/RepositoryMongoDB';
 import getBaseValidSchema from '~/helpers/getBaseValidSchema';
 import NextError from '~/helpers/nextError';
-import type { ModelId } from '~/models/model';
 import type { ProductAttr, ProductModel, ProductModelProperties } from '~/models/productModel';
-import { RepositoryMongoDB } from '~/repositories/RepositoryMongoDB';
 import type { ProductRepository } from '~/repositories/productRepository';
 
 const baseSchema = getBaseValidSchema<ProductModel>();
@@ -36,43 +36,12 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
     super(COLLECTION_NAME_KEYS.PRODUCTS, SCHEMA, { invalidFields: INVALID_FIELDS });
   }
 
-  public async create(data: Record<string, unknown>): Promise<InsertOneResult<ProductModel>> {
-    let validData: ProductModel | null = null;
-    try {
-      validData = await this.validateBeforeCreate(data);
-    } catch (error) {
-      throw new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error);
-    }
-    return this.collection.insertOne(validData);
-  }
-
-  public async update(id: string, updateData: Record<string, unknown>): Promise<WithId<ProductModel> | null> {
-    this.removeInvalidFields(updateData);
-    return this.collection.findOneAndUpdate(
-      { _id: new ObjectId(id) },
-      { $set: updateData },
-      { returnDocument: 'after' },
-    );
-  }
-
-  public async pushSkuIds(productId: ModelId, skuIds: ModelId[]): Promise<WithId<ProductModel> | null> {
-    return this.collection.findOneAndUpdate(
-      { _id: new ObjectId(productId) },
-      { $push: { skuIds: { $each: skuIds } } },
-      { returnDocument: 'after' },
-    );
-  }
-
-  public async pullSkuIds(productId: ModelId, skuIds: ObjectId[]): Promise<WithId<ProductModel> | null> {
-    return this.collection.findOneAndUpdate(
-      { _id: new ObjectId(productId) },
-      { $pull: { skuIds: { $each: skuIds } } },
-      { returnDocument: 'after' },
-    );
-  }
-
   public findOneByName(name: string): Promise<WithId<ProductModel> | null> {
     return this.collection.findOne({ name });
+  }
+
+  public findOneBySlugify(slugify: string): Promise<WithId<ProductModel> | null> {
+    return this.collection.findOne({ slugify });
   }
 
   public async getDetailsBySlugify(slugify: string): Promise<Document | null> {
@@ -91,6 +60,32 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
       .toArray();
 
     return result[0] ?? null;
+  }
+
+  public async insertOne(data: Record<string, unknown>): Promise<InsertOneResult<ProductModel>> {
+    let validatedData: ProductModel | null = null;
+    try {
+      validatedData = await this.validateBeforeCreate(data);
+    } catch (error) {
+      throw new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error);
+    }
+    return this.collection.insertOne(validatedData);
+  }
+
+  public async pushSkuIds(productId: ModelId, skuIds: ObjectId[]): Promise<WithId<ProductModel> | null> {
+    return this.collection.findOneAndUpdate(
+      { _id: new ObjectId(productId) },
+      { $push: { skuIds: { $each: skuIds } } },
+      { returnDocument: 'after' },
+    );
+  }
+
+  public async pullSkuIds(productId: ModelId, skuIds: ObjectId[]): Promise<WithId<ProductModel> | null> {
+    return this.collection.findOneAndUpdate(
+      { _id: new ObjectId(productId) },
+      { $pull: { skuIds: { $each: skuIds } } },
+      { returnDocument: 'after' },
+    );
   }
 
   public destroyById(productId: ModelId): Promise<WithId<ProductModel> | null> {

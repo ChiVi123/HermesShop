@@ -1,13 +1,11 @@
 import Joi from 'joi';
 import type { InsertOneResult, WithId } from 'mongodb';
-import { ObjectId } from 'mongodb';
 import { COLLECTION_NAME_KEYS } from '~/configs/collectionNameKeys';
 import { StatusCodes } from '~/configs/statusCode';
+import { RepositoryMongoDB } from '~/core/repository/RepositoryMongoDB';
 import getBaseValidSchema from '~/helpers/getBaseValidSchema';
 import NextError from '~/helpers/nextError';
 import type { CategoryModel, CategoryModelProperties } from '~/models/categoryModel';
-import type { ModelId } from '~/models/model';
-import { RepositoryMongoDB } from '~/repositories/RepositoryMongoDB';
 import type { CategoryRepository } from '~/repositories/categoryRepository';
 
 const baseSkuSchema = getBaseValidSchema<CategoryModel>();
@@ -34,22 +32,13 @@ export class CategoryModelRepository
     return this.collection.findOne({ slugify });
   }
 
-  public async create(data: Record<string, unknown>): Promise<InsertOneResult<CategoryModel>> {
-    let validData: CategoryModel | null = null;
+  public async insertOne(data: Record<string, unknown>): Promise<InsertOneResult<CategoryModel>> {
+    let validatedData: CategoryModel | null = null;
     try {
-      validData = await this.validateBeforeCreate(data);
+      validatedData = await this.validateBeforeCreate(data);
     } catch (error) {
       throw new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error);
     }
-    return this.collection.insertOne({ ...validData });
-  }
-
-  public async update(categoryId: ModelId, updateData: Record<string, unknown>): Promise<WithId<CategoryModel> | null> {
-    this.removeInvalidFields(updateData);
-    return this.collection.findOneAndUpdate(
-      { _id: new ObjectId(categoryId) },
-      { $set: updateData },
-      { returnDocument: 'after' },
-    );
+    return this.collection.insertOne(validatedData);
   }
 }

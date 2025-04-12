@@ -1,5 +1,5 @@
 import type { WithId } from 'mongodb';
-import type { Model } from '~/models/model';
+import type { Model } from '~/core/model/types';
 
 export interface CategoryModel extends Model {
   name: string;

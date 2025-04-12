@@ -32,12 +32,12 @@ export class ProductService {
     const existProduct = await this.productRepository.findOneByName(data.name);
     if (existProduct) throw new NextError(StatusCodes.CONFLICT, 'Product already exists!');
 
-    const insertedOneResult = await this.productRepository.create({ ...data, slugify: slug(data.name) });
+    const insertedOneResult = await this.productRepository.insertOne({ ...data, slugify: slug(data.name) });
     return this.productRepository.findOneById(insertedOneResult.insertedId);
   }
 
   public async update(id: string, data: Record<string, unknown>) {
-    return this.productRepository.update(id, data);
+    return this.productRepository.findOneAndUpdateById(id, data);
   }
 
   public async destroyById(id: string) {
