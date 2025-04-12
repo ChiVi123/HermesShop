@@ -5,7 +5,7 @@ const getBaseValidSchema = <T extends Model>(): Joi.ObjectSchema<T> => {
   return Joi.object<T>({
     createdAt: Joi.date().timestamp('javascript').default(Date.now()),
     updatedAt: Joi.date().timestamp('javascript').default(null),
-    _destroy: Joi.boolean().default(false),
+    _hidden: Joi.boolean().default(false),
   });
 };
 

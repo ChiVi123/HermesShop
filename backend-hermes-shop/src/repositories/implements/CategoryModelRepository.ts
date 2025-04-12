@@ -16,7 +16,7 @@ const SCHEMA = baseSkuSchema.keys({
   name: Joi.string().required().trim().strict(),
   slugify: Joi.string().required().trim().strict(),
 });
-const INVALID_FIELDS: CategoryModelProperties[] = ['_id', '_destroy', 'createdAt'];
+const INVALID_FIELDS: CategoryModelProperties[] = ['_id', 'createdAt'];
 
 export class CategoryModelRepository
   extends RepositoryMongoDB<CategoryModel>

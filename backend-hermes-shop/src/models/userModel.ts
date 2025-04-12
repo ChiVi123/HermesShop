@@ -14,5 +14,4 @@ export type UserReqBody = {
   email: string;
   password: string;
 };
-export type UserSetData = Omit<UserModel, 'createdAt' | 'updatedAt' | '_destroy'>;
 export type UserModelProperties = keyof WithId<UserModel>;

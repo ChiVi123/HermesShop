@@ -28,7 +28,7 @@ const SCHEMA = baseSkuSchema.keys({
     )
     .default([]),
 });
-const INVALID_FIELDS: SkuModelProperties[] = ['_id', '_destroy', 'createdAt'];
+const INVALID_FIELDS: SkuModelProperties[] = ['_id', 'createdAt'];
 
 export class SkuModelRepository extends RepositoryMongoDB<SkuModel> implements SkuRepository<SkuModel> {
   constructor() {

@@ -20,7 +20,7 @@ const SCHEMA = baseSchema.keys({
     .valid(...Object.values(ROLE_NAMES))
     .default(ROLE_NAMES.USER),
 });
-const INVALID_FIELDS: UserModelProperties[] = ['_id', '_destroy', 'createdAt', 'email', 'username'];
+const INVALID_FIELDS: UserModelProperties[] = ['_id', 'createdAt', 'email', 'username'];
 
 export class UserModelRepository extends RepositoryMongoDB<UserModel> implements UserRepository<UserModel> {
   constructor() {

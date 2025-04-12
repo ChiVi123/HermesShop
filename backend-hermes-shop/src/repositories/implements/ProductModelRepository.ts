@@ -29,7 +29,7 @@ const SCHEMA = baseSchema.keys({
     .default([]),
   skuIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
 });
-const INVALID_FIELDS: ProductModelProperties[] = ['_id', '_destroy', 'createdAt'];
+const INVALID_FIELDS: ProductModelProperties[] = ['_id', 'createdAt'];
 
 export class ProductModelRepository extends RepositoryMongoDB<ProductModel> implements ProductRepository<ProductModel> {
   constructor() {
