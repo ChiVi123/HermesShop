@@ -10,41 +10,41 @@ import { SkuModelRepository } from '~/repositories/implements/SkuModelRepository
 type CreateReqBody = Omit<Request<unknown, unknown, ProductReqBody>['body'], 'skus'>;
 
 export class ProductService {
-  private productModel: ProductModelRepository;
-  private skuModel: SkuModelRepository;
+  private productRepository: ProductModelRepository;
+  private skuRepository: SkuModelRepository;
 
   constructor() {
-    this.productModel = new ProductModelRepository();
-    this.skuModel = new SkuModelRepository();
+    this.productRepository = new ProductModelRepository();
+    this.skuRepository = new SkuModelRepository();
   }
 
   public getAll() {
-    return this.productModel.collection.find().toArray();
+    return this.productRepository.collection.find().toArray();
   }
 
   public async getDetail(slugify: string) {
-    const product = await this.productModel.getDetailsBySlugify(slugify);
+    const product = await this.productRepository.getDetailsBySlugify(slugify);
     if (!product) throw new NextError(StatusCodes.NOT_FOUND, 'Product not found!');
     return product;
   }
 
   public async create(data: CreateReqBody) {
-    const existProduct = await this.productModel.findOneByName(data.name);
+    const existProduct = await this.productRepository.findOneByName(data.name);
     if (existProduct) throw new NextError(StatusCodes.CONFLICT, 'Product already exists!');
 
-    const insertedOneResult = await this.productModel.create({ ...data, slugify: slug(data.name) });
-    return this.productModel.findOneById(insertedOneResult.insertedId);
+    const insertedOneResult = await this.productRepository.create({ ...data, slugify: slug(data.name) });
+    return this.productRepository.findOneById(insertedOneResult.insertedId);
   }
 
   public async update(id: string, data: Record<string, unknown>) {
-    return this.productModel.update(id, data);
+    return this.productRepository.update(id, data);
   }
 
   public async destroyById(id: string) {
-    const deletedProduct = await this.productModel.destroyById(id);
+    const deletedProduct = await this.productRepository.destroyById(id);
     if (!deletedProduct) throw new NextError(StatusCodes.NOT_FOUND, 'Product not found!');
 
-    const deletedSkuPromises = deletedProduct.skuIds.map((skuId) => this.skuModel.destroyById(skuId));
+    const deletedSkuPromises = deletedProduct.skuIds.map((skuId) => this.skuRepository.destroyById(skuId));
     const deleteSkus = await Promise.all(deletedSkuPromises);
 
     for (const sku of deleteSkus) {
