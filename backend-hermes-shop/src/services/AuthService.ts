@@ -46,7 +46,7 @@ export class AuthService {
       username: email.split('@')[0],
       password: bcryptjs.hashSync(password, 8),
     };
-    const insertedOneResult = await this.userRepository.create(userData);
+    const insertedOneResult = await this.userRepository.insertOne(userData);
     const userCreated = (await this.userRepository.findOneById(insertedOneResult.insertedId))!;
 
     return pickUser(userCreated);

@@ -1,13 +1,10 @@
-import type { Document, InsertOneResult, WithId } from 'mongodb';
-import type { ModelId } from '~/models/model';
+import type { WithId } from 'mongodb';
+import type { Model, ModelId } from '~/core/model/types';
+import type { RepositoryFindOneWithName, RepositoryInsertOne } from '~/core/repository/types';
 
-interface ProductRepository<T> {
-  create(data: Record<string, unknown>): Promise<InsertOneResult<T>>;
-  update(productId: string, updateData: Record<string, unknown>): Promise<WithId<T> | null>;
+interface ProductRepository<T extends Model> extends RepositoryFindOneWithName<T>, RepositoryInsertOne<T> {
   pushSkuIds(productId: ModelId, skuIds: ModelId[]): Promise<WithId<T> | null>;
   pullSkuIds(productId: ModelId, skuIds: ModelId[]): Promise<WithId<T> | null>;
-  findOneByName(name: string): Promise<WithId<T> | null>;
-  getDetailsBySlugify(slugify: string): Promise<Document | null>;
   destroyById(productId: ModelId): Promise<WithId<T> | null>;
 }
 

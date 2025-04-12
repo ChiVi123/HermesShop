@@ -1,14 +1,14 @@
 import Joi from 'joi';
-import type { InsertManyResult, InsertOneResult, WithId } from 'mongodb';
+import type { InsertManyResult, WithId } from 'mongodb';
 import { ObjectId } from 'mongodb';
 import { COLLECTION_NAME_KEYS } from '~/configs/collectionNameKeys';
 import { StatusCodes } from '~/configs/statusCode';
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/configs/validates';
+import type { ModelId } from '~/core/model/types';
+import { RepositoryMongoDB } from '~/core/repository/RepositoryMongoDB';
 import getBaseValidSchema from '~/helpers/getBaseValidSchema';
 import NextError from '~/helpers/nextError';
-import type { ModelId } from '~/models/model';
 import type { SkuAttr, SkuModel, SkuModelProperties } from '~/models/productModel';
-import { RepositoryMongoDB } from '~/repositories/RepositoryMongoDB';
 import type { SkuRepository } from '~/repositories/skuRepository';
 
 const baseSkuSchema = getBaseValidSchema<SkuModel>();
@@ -35,16 +35,6 @@ export class SkuModelRepository extends RepositoryMongoDB<SkuModel> implements S
     super(COLLECTION_NAME_KEYS.SKUS, SCHEMA, { invalidFields: INVALID_FIELDS });
   }
 
-  public async create(data: Record<string, unknown>): Promise<InsertOneResult<SkuModel>> {
-    let validData: SkuModel | null = null;
-    try {
-      validData = await this.validateBeforeCreate(data);
-    } catch (error) {
-      throw new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error);
-    }
-    return this.collection.insertOne({ ...validData, productId: new ObjectId(validData.productId) });
-  }
-
   public async createMany(dataList: Record<string, unknown>[]): Promise<InsertManyResult<SkuModel>> {
     const validDataList: SkuModel[] = [];
     try {
@@ -59,13 +49,8 @@ export class SkuModelRepository extends RepositoryMongoDB<SkuModel> implements S
     return this.collection.insertMany(validDataList);
   }
 
-  public async update(skuId: string, updateData: Record<string, unknown>): Promise<WithId<SkuModel> | null> {
-    this.removeInvalidFields(updateData);
-    return this.collection.findOneAndUpdate(
-      { _id: new ObjectId(skuId) },
-      { $set: updateData },
-      { returnDocument: 'after' },
-    );
+  public async findOneByName(name: string): Promise<WithId<SkuModel> | null> {
+    return this.collection.findOne({ name });
   }
 
   public async findOneBySlugify(slugify: string): Promise<WithId<SkuModel> | null> {

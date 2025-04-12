@@ -5,6 +5,7 @@ export interface Model {
   updatedAt: number | null;
   _hidden: boolean;
 }
+
 export type ModelId = string | ObjectId;
-export type ModelArrayId = string[] | ObjectId[];
+export type ModelIds = string[] | ObjectId[];
 export type ModelResponse = Omit<Model, '_hidden'>;
