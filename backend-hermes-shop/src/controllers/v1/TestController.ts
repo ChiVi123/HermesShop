@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { StatusCodes } from '~/configs/statusCode';
+import { StatusCodes } from '~/configs/statusCodes';
 import Controller from '~/controllers/Controller';
 import { getDB } from '~/core/mongodb';
 import controllerDecorator from '~/decorators/controllerDecorator';

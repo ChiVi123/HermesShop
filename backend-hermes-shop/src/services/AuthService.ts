@@ -2,11 +2,11 @@ import bcryptjs from 'bcryptjs';
 import type { Request } from 'express';
 import type { JwtPayload } from 'jsonwebtoken';
 import env from '~/configs/environment';
-import { StatusCodes } from '~/configs/statusCode';
+import { StatusCodes } from '~/configs/statusCodes';
 import NextError from '~/helpers/nextError';
 import pickUser from '~/helpers/pickUser';
 import type { UserReqBody } from '~/models/userModel';
-import JwtProvider from '~/providers/jwt';
+import { jwtProvider } from '~/providers/jwtProvider';
 import { UserModelRepository } from '~/repositories/implements/UserModelRepository';
 
 export class AuthService {
@@ -20,9 +20,9 @@ export class AuthService {
     if (!token) throw new NextError(StatusCodes.FORBIDDEN, 'Please Sign In! (Error from refresh token)');
 
     try {
-      const refreshTokenDecoded = JwtProvider.verifyToken(token, env.REFRESH_TOKEN_SECRET_SIGNATURE) as JwtPayload;
+      const refreshTokenDecoded = jwtProvider.verifyToken(token, env.REFRESH_TOKEN_SECRET_SIGNATURE) as JwtPayload;
       const userInfo = { _id: refreshTokenDecoded._id, email: refreshTokenDecoded.email };
-      const accessToken = JwtProvider.generateToken({
+      const accessToken = jwtProvider.generateToken({
         payload: userInfo,
         secretSignature: env.ACCESS_TOKEN_SECRET_SIGNATURE,
         // tokenLife: env.ACCESS_TOKEN_LIFE,
@@ -62,13 +62,13 @@ export class AuthService {
     }
 
     const userInfo = { _id: existUser._id, email: existUser.email };
-    const accessToken = JwtProvider.generateToken({
+    const accessToken = jwtProvider.generateToken({
       payload: userInfo,
       secretSignature: env.ACCESS_TOKEN_SECRET_SIGNATURE,
       // tokenLife: env.ACCESS_TOKEN_LIFE,
       tokenLife: '5s',
     });
-    const refreshToken = JwtProvider.generateToken({
+    const refreshToken = jwtProvider.generateToken({
       payload: userInfo,
       secretSignature: env.REFRESH_TOKEN_SECRET_SIGNATURE,
       // tokenLife: env.REFRESH_TOKEN_LIFE,

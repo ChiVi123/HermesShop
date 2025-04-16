@@ -12,5 +12,4 @@ const generateToken = (params: GenerateToken): string => {
 };
 const verifyToken = (token: string, secretSignature: string) => Jwt.verify(token, secretSignature);
 
-const JwtProvider = { generateToken, verifyToken };
-export default JwtProvider;
+export const jwtProvider = { generateToken, verifyToken };

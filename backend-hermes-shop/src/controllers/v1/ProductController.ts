@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { StatusCodes } from '~/configs/statusCode';
+import { StatusCodes } from '~/configs/statusCodes';
 import Controller from '~/controllers/Controller';
 import controllerDecorator from '~/decorators/controllerDecorator';
 import routeDecorator from '~/decorators/routeDecorator';
@@ -52,7 +52,7 @@ class ProductController extends Controller {
     res.status(StatusCodes.OK).json(updatedProduct);
   }
 
-  @routeDecorator('patch', '/sku/:id', multerMiddleware.upload.array('images'))
+  @routeDecorator('patch', '/sku/:id', multerMiddleware.array('images'))
   @validateDecorator(skuValidate)
   public async updateSku(req: Request, res: Response) {
     const skuId = req.params.id;

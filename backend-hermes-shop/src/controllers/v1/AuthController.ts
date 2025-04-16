@@ -1,7 +1,7 @@
 import type { CookieOptions, Request, Response } from 'express';
 import ms from 'ms';
 import env from '~/configs/environment';
-import { StatusCodes } from '~/configs/statusCode';
+import { StatusCodes } from '~/configs/statusCodes';
 import Controller from '~/controllers/Controller';
 import controllerDecorator from '~/decorators/controllerDecorator';
 import routeDecorator from '~/decorators/routeDecorator';

@@ -1,5 +1,5 @@
 import slug from 'slug';
-import { StatusCodes } from '~/configs/statusCode';
+import { StatusCodes } from '~/configs/statusCodes';
 import NextError from '~/helpers/nextError';
 import type { CategoryReqBody } from '~/models/categoryModel';
 import { CategoryModelRepository } from '~/repositories/implements/CategoryModelRepository';

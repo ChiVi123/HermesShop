@@ -1,4 +1,4 @@
-import type { StatusCodes } from '~/configs/statusCode';
+import type { StatusCodes } from '~/configs/statusCodes';
 
 class NextError extends Error {
   public statusCode: StatusCodes;

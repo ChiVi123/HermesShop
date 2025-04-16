@@ -2,7 +2,7 @@ import Joi from 'joi';
 import type { Document, InsertOneResult, WithId } from 'mongodb';
 import { ObjectId } from 'mongodb';
 import { COLLECTION_NAME_KEYS } from '~/configs/collectionNameKeys';
-import { StatusCodes } from '~/configs/statusCode';
+import { StatusCodes } from '~/configs/statusCodes';
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/configs/validates';
 import type { ModelId } from '~/core/model/types';
 import { RepositoryMongoDB } from '~/core/repository/RepositoryMongoDB';

@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import type Joi from 'joi';
-import { StatusCodes } from '~/configs/statusCode';
+import { StatusCodes } from '~/configs/statusCodes';
 import NextError from '~/helpers/nextError';
 
 function validateDecorator(schema: Joi.ObjectSchema): MethodDecorator {

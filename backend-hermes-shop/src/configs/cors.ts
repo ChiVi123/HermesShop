@@ -1,7 +1,7 @@
 import type { CorsOptions } from 'cors';
+import env from '~/configs/environment';
+import { StatusCodes } from '~/configs/statusCodes';
 import NextError from '~/helpers/nextError';
-import env from './environment';
-import { StatusCodes } from './statusCode';
 
 const generateRegexPath = (pathName: string) => new RegExp(`/v1/${pathName}/?(.+)`);
 

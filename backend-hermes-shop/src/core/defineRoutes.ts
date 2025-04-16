@@ -2,7 +2,7 @@ import type { Express } from 'express';
 import { securityPathConfig } from '~/configs/cors';
 import { METADATA_KEYS } from '~/configs/metadataKeys';
 import type Controller from '~/controllers/Controller';
-import authMiddleware from '~/middlewares/authMiddle';
+import authMiddleware from '~/middlewares/authMiddleware';
 import type { MapperExpressMethods } from '~/types/expressProperties';
 
 function defineRoutes(controllers: (typeof Controller)[], application: Express) {

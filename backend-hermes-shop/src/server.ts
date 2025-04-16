@@ -12,8 +12,8 @@ import env from '~/configs/environment';
 import v1Controllers from '~/controllers/v1';
 import defineRoutes from '~/core/defineRoutes';
 import { closeDB, connectDB } from '~/core/mongodb';
-import errorHandlingMiddleware from '~/middlewares/errorHandling';
-import routeNotFoundMiddleware from '~/middlewares/routeNotFound';
+import errorHandlingMiddleware from '~/middlewares/errorHandlingMiddleware';
+import routeNotFoundMiddleware from '~/middlewares/routeNotFoundMiddleware';
 
 // config slug charmap
 slug.charmap['/'] = '-';

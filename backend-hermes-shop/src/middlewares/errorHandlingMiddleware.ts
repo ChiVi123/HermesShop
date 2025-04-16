@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { StatusCodes } from '~/configs/statusCode';
+import { StatusCodes } from '~/configs/statusCodes';
 import type NextError from '~/helpers/nextError';
 
 type ResponseError = {
@@ -9,7 +9,7 @@ type ResponseError = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const errorHandlingMiddleware = (err: NextError, req: Request, res: Response, _next: NextFunction) => {
+const errorHandlingMiddleware = (err: NextError, _req: Request, res: Response, _next: NextFunction) => {
   if (!err.statusCode) err.statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
 
   const responseError: ResponseError = {
