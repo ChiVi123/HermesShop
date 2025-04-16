@@ -4,6 +4,5 @@ export interface Image {
   width: number;
   height: number;
   bytes: number;
-  thumbnail?: boolean;
   createdAt: number;
 }
