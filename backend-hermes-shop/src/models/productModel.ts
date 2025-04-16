@@ -1,4 +1,5 @@
 import type { WithId } from 'mongodb';
+import type { STATUS_PRODUCT_KEYS } from '~/configs/statusProductKeys';
 import type { Model, ModelId, ModelIds, ModelResponse } from '~/core/model/types';
 import type { Image } from '~/models/imageModel';
 
@@ -10,6 +11,7 @@ export interface ProductModel extends Model {
   gender: string;
   attrs: ProductAttr[];
   skuIds: ModelIds;
+  _status: STATUS_PRODUCT_KEYS;
 }
 export interface SkuModel extends Model {
   productId: ModelId;

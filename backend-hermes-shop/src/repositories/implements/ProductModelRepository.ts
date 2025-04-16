@@ -3,6 +3,7 @@ import type { Document, InsertOneResult, WithId } from 'mongodb';
 import { ObjectId } from 'mongodb';
 import { COLLECTION_NAME_KEYS } from '~/configs/collectionNameKeys';
 import { StatusCodes } from '~/configs/statusCodes';
+import { STATUS_PRODUCT_KEYS } from '~/configs/statusProductKeys';
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/configs/validates';
 import type { ModelId } from '~/core/model/types';
 import { RepositoryMongoDB } from '~/core/repository/RepositoryMongoDB';
@@ -28,6 +29,9 @@ const SCHEMA = baseSchema.keys({
     )
     .default([]),
   skuIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
+  _status: Joi.string()
+    .valid(...Object.values(STATUS_PRODUCT_KEYS))
+    .default(STATUS_PRODUCT_KEYS.PRODUCT),
 });
 const INVALID_FIELDS: ProductModelProperties[] = ['_id', 'createdAt'];
 
