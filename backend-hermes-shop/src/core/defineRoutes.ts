@@ -1,6 +1,6 @@
 import type { Express } from 'express';
 import { securityPathConfig } from '~/configs/cors';
-import { METADATA_KEYS } from '~/configs/metadataKeys';
+import { METADATA_KEYS } from '~/configs/keys';
 import type Controller from '~/controllers/Controller';
 import authMiddleware from '~/middlewares/authMiddleware';
 import type { MapperExpressMethods } from '~/types/expressProperties';

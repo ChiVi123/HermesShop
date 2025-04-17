@@ -1,6 +1,5 @@
 import type { WithId } from 'mongodb';
-import type { OPTION_TYPE_KEYS } from '~/configs/keys';
-import type { STATUS_PRODUCT_KEYS } from '~/configs/statusProductKeys';
+import type { OPTION_TYPE_KEYS, STATUS_PRODUCT_KEYS } from '~/configs/keys';
 import type { Model, ModelId, ModelIds, ModelResponse } from '~/core/model/types';
 import type { Image } from '~/models/imageModel';
 

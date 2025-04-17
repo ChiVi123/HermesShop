@@ -1,6 +1,6 @@
 import Joi from 'joi';
 import type { InsertOneResult, WithId } from 'mongodb';
-import { COLLECTION_NAME_KEYS } from '~/configs/collectionNameKeys';
+import { COLLECTION_NAME_KEYS } from '~/configs/keys';
 import { StatusCodes } from '~/configs/statusCodes';
 import { RepositoryMongoDB } from '~/core/repository/RepositoryMongoDB';
 import getBaseValidSchema from '~/helpers/getBaseValidSchema';

@@ -1,5 +1,5 @@
 import type { Express, NextFunction, Request, RequestHandler, Response } from 'express';
-import { METADATA_KEYS } from '~/configs/metadataKeys';
+import { METADATA_KEYS } from '~/configs/keys';
 import type { MapperExpressMethods } from '~/types/expressProperties';
 
 function routeDecorator(method: keyof Express, path: string = '', ...handlers: RequestHandler[]): MethodDecorator {

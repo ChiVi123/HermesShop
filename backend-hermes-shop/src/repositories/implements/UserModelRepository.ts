@@ -1,6 +1,6 @@
 import Joi from 'joi';
 import type { InsertOneResult } from 'mongodb';
-import { COLLECTION_NAME_KEYS } from '~/configs/collectionNameKeys';
+import { COLLECTION_NAME_KEYS } from '~/configs/keys';
 import { ROLE_NAMES } from '~/configs/role';
 import { StatusCodes } from '~/configs/statusCodes';
 import { EMAIL_RULE, EMAIL_RULE_MESSAGE, PASSWORD_RULE, PASSWORD_RULE_MESSAGE } from '~/configs/validates';

@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import type { InsertManyResult, WithId } from 'mongodb';
 import { ObjectId } from 'mongodb';
-import { COLLECTION_NAME_KEYS } from '~/configs/collectionNameKeys';
+import { COLLECTION_NAME_KEYS } from '~/configs/keys';
 import { StatusCodes } from '~/configs/statusCodes';
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/configs/validates';
 import type { ModelId } from '~/core/model/types';
