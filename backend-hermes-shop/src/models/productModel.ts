@@ -1,4 +1,6 @@
 import type { WithId } from 'mongodb';
+import type { OPTION_TYPE_KEYS } from '~/configs/keys';
+import type { STATUS_PRODUCT_KEYS } from '~/configs/statusProductKeys';
 import type { Model, ModelId, ModelIds, ModelResponse } from '~/core/model/types';
 import type { Image } from '~/models/imageModel';
 
@@ -9,7 +11,9 @@ export interface ProductModel extends Model {
   rating: number;
   gender: string;
   attrs: ProductAttr[];
+  options: ProductOption[];
   skuIds: ModelIds;
+  _status: STATUS_PRODUCT_KEYS;
 }
 export interface SkuModel extends Model {
   productId: ModelId;
@@ -18,13 +22,17 @@ export interface SkuModel extends Model {
   price: number;
   discountPrice: number;
   images: Image[];
-  attrs: SkuAttr[];
+  specs: SkuSpec[];
+}
+export interface ProductOption {
+  key: string;
+  type: OPTION_TYPE_KEYS;
 }
 export interface ProductAttr {
   key: string;
-  type: string;
+  value: string;
 }
-export interface SkuAttr {
+export interface SkuSpec {
   key: string;
   value: string;
   unit?: string;
@@ -34,8 +42,9 @@ export type ProductResponse = ModelResponse;
 export type ProductReqBody = {
   name: string;
   shortDescription: string;
-  attrs: { key: string; type: string }[];
-  skus: { name: string; price: number; discountPrice: number; attrs: { key: string; value: string }[] }[];
+  attrs: ProductAttr[];
+  options: ProductOption[];
+  skus: { name: string; price: number; discountPrice: number; specs: { key: string; value: string }[] }[];
 };
 
 export type ProductModelProperties = keyof WithId<ProductModel>;

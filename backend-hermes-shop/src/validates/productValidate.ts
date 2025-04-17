@@ -1,19 +1,27 @@
 import Joi from 'joi';
-import type { ProductReqBody } from '~/models/productModel';
+import { OPTION_TYPE_KEYS } from '~/configs/keys';
+import type { ProductAttr, ProductOption, ProductReqBody } from '~/models/productModel';
 import { skuValidate } from '~/validates/skuValidate';
 
-const productAttrsSchema = Joi.object({
+const productAttrsSchema = Joi.object<ProductAttr>({
   key: Joi.string().required().trim().strict(),
-  type: Joi.string().required().trim().strict(),
+  value: Joi.string().required().trim().strict(),
+});
+const productOptionsSchema = Joi.object<ProductOption>({
+  key: Joi.string().required().trim().strict(),
+  type: Joi.string()
+    .valid(...Object.values(OPTION_TYPE_KEYS))
+    .default(OPTION_TYPE_KEYS.SELECT),
 });
 
 export const createProductValidate = Joi.object<ProductReqBody>({
   name: Joi.string().required().trim().strict(),
-  shortDescription: Joi.string().required().trim().strict(),
+  shortDescription: Joi.string().trim().strict(),
   attrs: Joi.array().items(productAttrsSchema).default([]),
+  options: Joi.array().items(productOptionsSchema).default([]),
   skus: Joi.array().items(skuValidate).default([]),
 });
 export const productUpdateValidate = Joi.object<ProductReqBody>({
   name: Joi.string().required().trim().strict(),
-  shortDescription: Joi.string().required().trim().strict(),
+  shortDescription: Joi.string().trim().strict(),
 });
