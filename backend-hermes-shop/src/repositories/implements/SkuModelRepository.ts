@@ -8,7 +8,7 @@ import type { ModelId } from '~/core/model/types';
 import { RepositoryMongoDB } from '~/core/repository/RepositoryMongoDB';
 import getBaseValidSchema from '~/helpers/getBaseValidSchema';
 import NextError from '~/helpers/nextError';
-import type { SkuAttr, SkuModel, SkuModelProperties } from '~/models/productModel';
+import type { SkuModel, SkuModelProperties, SkuSpec } from '~/models/productModel';
 import type { SkuRepository } from '~/repositories/skuRepository';
 
 const baseSkuSchema = getBaseValidSchema<SkuModel>();
@@ -19,9 +19,9 @@ const SCHEMA = baseSkuSchema.keys({
   slugify: Joi.string().required().trim().strict(),
   price: Joi.number().required().min(0),
   discountPrice: Joi.number().default(Joi.ref('price', { adjust: (value) => value })),
-  attrs: Joi.array()
+  specs: Joi.array()
     .items(
-      Joi.object<SkuAttr>({
+      Joi.object<SkuSpec>({
         key: Joi.string().required().trim().strict(),
         value: Joi.string().required().trim().strict(),
       }),

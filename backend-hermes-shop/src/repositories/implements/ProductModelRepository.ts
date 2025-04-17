@@ -2,6 +2,8 @@ import Joi from 'joi';
 import type { Document, InsertOneResult, WithId } from 'mongodb';
 import { ObjectId } from 'mongodb';
 import { COLLECTION_NAME_KEYS } from '~/configs/collectionNameKeys';
+import { GENDER_KEYS } from '~/configs/genderKeys';
+import { OPTION_TYPE_KEYS } from '~/configs/keys';
 import { StatusCodes } from '~/configs/statusCodes';
 import { STATUS_PRODUCT_KEYS } from '~/configs/statusProductKeys';
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/configs/validates';
@@ -9,7 +11,7 @@ import type { ModelId } from '~/core/model/types';
 import { RepositoryMongoDB } from '~/core/repository/RepositoryMongoDB';
 import getBaseValidSchema from '~/helpers/getBaseValidSchema';
 import NextError from '~/helpers/nextError';
-import type { ProductAttr, ProductModel, ProductModelProperties } from '~/models/productModel';
+import type { ProductAttr, ProductModel, ProductModelProperties, ProductOption } from '~/models/productModel';
 import type { ProductRepository } from '~/repositories/productRepository';
 
 const baseSchema = getBaseValidSchema<ProductModel>();
@@ -17,14 +19,26 @@ const baseSchema = getBaseValidSchema<ProductModel>();
 const SCHEMA = baseSchema.keys({
   name: Joi.string().required().trim().strict(),
   slugify: Joi.string().required().trim().strict(),
-  shortDescription: Joi.string().required().trim().strict(),
-  gender: Joi.string().trim().strict().default('Men'),
+  shortDescription: Joi.string().trim().strict(),
+  gender: Joi.string()
+    .valid(...Object.values(GENDER_KEYS))
+    .default(GENDER_KEYS.MEN),
   rating: Joi.number().positive().default(0),
   attrs: Joi.array()
     .items(
       Joi.object<ProductAttr>({
         key: Joi.string().required().trim().strict(),
-        type: Joi.string().required().trim().strict(),
+        value: Joi.string().required().trim().strict(),
+      }),
+    )
+    .default([]),
+  options: Joi.array()
+    .items(
+      Joi.object<ProductOption>({
+        key: Joi.string().required().trim().strict(),
+        type: Joi.string()
+          .valid(...Object.values(OPTION_TYPE_KEYS))
+          .default(OPTION_TYPE_KEYS.SELECT),
       }),
     )
     .default([]),
