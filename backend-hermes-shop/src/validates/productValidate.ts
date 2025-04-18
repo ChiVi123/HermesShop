@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import { OPTION_TYPE_KEYS } from '~/configs/keys';
+import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/configs/validates';
 import type { ProductAttr, ProductOption, ProductReqBody } from '~/models/productModel';
 import { skuValidate } from '~/validates/skuValidate';
 
@@ -17,6 +18,7 @@ const productOptionsSchema = Joi.object<ProductOption>({
 export const createProductValidate = Joi.object<ProductReqBody>({
   name: Joi.string().required().trim().strict(),
   shortDescription: Joi.string().trim().strict(),
+  categoryId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
   attrs: Joi.array().items(productAttrsSchema).default([]),
   options: Joi.array().items(productOptionsSchema).default([]),
   skus: Joi.array().items(skuValidate).default([]),
@@ -24,4 +26,5 @@ export const createProductValidate = Joi.object<ProductReqBody>({
 export const productUpdateValidate = Joi.object<ProductReqBody>({
   name: Joi.string().required().trim().strict(),
   shortDescription: Joi.string().trim().strict(),
+  categoryId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
 });
