@@ -17,6 +17,7 @@ const SCHEMA = baseSchema.keys({
   name: Joi.string().required().trim().strict(),
   slugify: Joi.string().required().trim().strict(),
   shortDescription: Joi.string().trim().strict(),
+  categoryId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
   gender: Joi.string()
     .valid(...Object.values(GENDER_KEYS))
     .default(GENDER_KEYS.MEN),
@@ -71,6 +72,14 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
             as: 'skus',
           },
         },
+        {
+          $lookup: {
+            from: COLLECTION_NAME_KEYS.CATEGORIES,
+            localField: 'categoryId',
+            foreignField: '_id',
+            as: 'category',
+          },
+        },
       ])
       .toArray();
 
@@ -84,7 +93,7 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
     } catch (error) {
       throw new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error);
     }
-    return this.collection.insertOne(validatedData);
+    return this.collection.insertOne({ ...validatedData, categoryId: new ObjectId(validatedData.categoryId) });
   }
 
   public async pushSkuIds(productId: ModelId, skuIds: ObjectId[]): Promise<WithId<ProductModel> | null> {

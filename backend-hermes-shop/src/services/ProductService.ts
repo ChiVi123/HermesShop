@@ -4,6 +4,7 @@ import { StatusCodes } from '~/configs/statusCodes';
 import NextError from '~/helpers/nextError';
 import type { ProductReqBody } from '~/models/productModel';
 import { cloudinaryProvider } from '~/providers/cloudinaryProvider';
+import { CategoryModelRepository } from '~/repositories/implements/CategoryModelRepository';
 import { ProductModelRepository } from '~/repositories/implements/ProductModelRepository';
 import { SkuModelRepository } from '~/repositories/implements/SkuModelRepository';
 
@@ -12,10 +13,12 @@ type CreateReqBody = Omit<Request<unknown, unknown, ProductReqBody>['body'], 'sk
 export class ProductService {
   private productRepository: ProductModelRepository;
   private skuRepository: SkuModelRepository;
+  private categoryRepository: CategoryModelRepository;
 
   constructor() {
     this.productRepository = new ProductModelRepository();
     this.skuRepository = new SkuModelRepository();
+    this.categoryRepository = new CategoryModelRepository();
   }
 
   public getAll() {
@@ -25,12 +28,16 @@ export class ProductService {
   public async getDetail(slugify: string) {
     const product = await this.productRepository.getDetailsBySlugify(slugify);
     if (!product) throw new NextError(StatusCodes.NOT_FOUND, 'Product not found!');
+    product.category = product.category[0];
     return product;
   }
 
   public async create(data: CreateReqBody) {
     const existProduct = await this.productRepository.findOneByName(data.name);
     if (existProduct) throw new NextError(StatusCodes.CONFLICT, 'Product already exists!');
+
+    const existCategory = await this.categoryRepository.findOneById(data.categoryId);
+    if (!existCategory) throw new NextError(StatusCodes.NOT_FOUND, 'Category not found!');
 
     const insertedOneResult = await this.productRepository.insertOne({ ...data, slugify: slug(data.name) });
     return this.productRepository.findOneById(insertedOneResult.insertedId);

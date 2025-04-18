@@ -7,6 +7,7 @@ export interface ProductModel extends Model {
   name: string;
   slugify: string;
   shortDescription: string;
+  categoryId: ModelId;
   rating: number;
   gender: string;
   attrs: ProductAttr[];
@@ -41,6 +42,7 @@ export type ProductResponse = ModelResponse;
 export type ProductReqBody = {
   name: string;
   shortDescription: string;
+  categoryId: string;
   attrs: ProductAttr[];
   options: ProductOption[];
   skus: { name: string; price: number; discountPrice: number; specs: { key: string; value: string }[] }[];
