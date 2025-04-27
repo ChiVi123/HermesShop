@@ -1,12 +1,16 @@
 import type { Page } from 'puppeteer';
 import puppeteer from 'puppeteer';
+import { createImage } from '~/helpers/createImage';
+import type { Image } from '~/models/imageModel';
+import { cloudinaryProvider } from '~/providers/cloudinaryProvider';
 import { COLLECTION_PRODUCT_SELECTOR, LOGGING_PREFIX, PRODUCT_DETAIL_SELECTOR, SKU_SELECTOR } from './constants';
 import { urlValidation } from './utils';
+
+const imageCached: Map<string, Image> = new Map();
 
 export async function crawlCollection(url: string) {
   if (!urlValidation(url)) return;
 
-  // Launch a new browser instance
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
   await page.goto(url);
@@ -30,6 +34,7 @@ export async function crawlCollection(url: string) {
 
     for (const href of hrefList) {
       await page.goto(href);
+
       if (product === null) {
         product = await crawlWebsiteProduct(page);
         currentProcess++;
@@ -39,10 +44,37 @@ export async function crawlCollection(url: string) {
         currentProcess++;
       }
 
-      console.log(`${Math.floor((currentProcess / hrefLength) * 100)}%`, `(${currentProcess}/${hrefLength})`);
+      logging.info(
+        LOGGING_PREFIX,
+        `${Math.floor((currentProcess / hrefLength) * 100)}%`,
+        `(${currentProcess}/${hrefLength})`,
+      );
     }
 
-    logging.info(LOGGING_PREFIX, 'Product skus:', product?.skus.length);
+    if (product === null) {
+      logging.info(LOGGING_PREFIX, 'No product found');
+      return;
+    }
+
+    logging.info(LOGGING_PREFIX, 'Upload images...');
+
+    for (const sku of product.skus) {
+      for (let image of sku.images) {
+        if (!(typeof image === 'string')) continue;
+
+        const imageUrl = 'https:' + image;
+        if (!imageCached.has(image)) {
+          const imageRes = await cloudinaryProvider.fileNameUpload(imageUrl, 'hermes-shop/products');
+          const imageData = createImage(imageRes);
+          imageCached.set(image, imageData);
+          image = imageData;
+        } else {
+          image = imageCached.get(image)!;
+        }
+      }
+    }
+
+    logging.info(LOGGING_PREFIX, 'Upload images done!');
   } catch (error) {
     logging.danger(LOGGING_PREFIX, 'Error crawling website:', error);
   } finally {
@@ -109,6 +141,7 @@ async function crawlWebsiteProduct(page: Page): Promise<Product> {
 type Sku = {
   price: number;
   discountPrice: number;
+  images: string[] | Image[];
   specs: {
     key: string;
     value: string;
@@ -121,9 +154,9 @@ async function getSkuRaw(page: Page): Promise<Sku[]> {
       const leftSideEl = root.querySelector(selector.LEFT_SIDE)!;
       const asideEl = root.querySelector(selector.ASIDE)!;
 
-      const images = Array.from(leftSideEl.querySelectorAll(selector.IMAGE)).map(
-        (el) => el.getAttribute('src')?.trim() ?? '',
-      );
+      const images = Array.from(leftSideEl.querySelectorAll(selector.IMAGE))
+        .map((el) => el.getAttribute('src')?.trim() ?? '')
+        .slice(0, 4);
 
       const [firstPrice, lastPrice] = Array.from(asideEl.querySelectorAll(selector.PRICE)).map(
         (el) => el.textContent?.trim() ?? '',
@@ -146,7 +179,7 @@ async function getSkuRaw(page: Page): Promise<Sku[]> {
       return productSizes.map((size) => ({
         price,
         discountPrice,
-        // images,
+        images,
         specs: [
           {
             key: 'color',
