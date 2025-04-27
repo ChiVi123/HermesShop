@@ -11,11 +11,9 @@ import { corsOptions } from '~/configs/cors';
 import env from '~/configs/environment';
 import v1Controllers from '~/controllers/v1';
 import defineRoutes from '~/core/defineRoutes';
-// import { closeDB, connectDB } from '~/core/mongodb';
+import { closeDB, connectDB } from '~/core/mongodb';
 import errorHandlingMiddleware from '~/middlewares/errorHandlingMiddleware';
 import routeNotFoundMiddleware from '~/middlewares/routeNotFoundMiddleware';
-
-import { crawlWebsite } from './database';
 
 // config slug charmap
 slug.charmap['/'] = '-';
@@ -47,22 +45,20 @@ const startServer = () => {
 
   AsyncExitHook(() => {
     console.log('[App] Exit');
-    // closeDB();
+    closeDB();
   });
 };
 
 logging.info('[App] Mongodb connecting...');
 
-// connectDB()
-//   .then(() => {
-//     console.log('[App] Mongodb connected');
-//   })
-//   .then(() => {
-//     startServer();
-//   })
-//   .catch((error) => {
-//     console.log('[App Error]', error);
-//     process.exit(0);
-//   });
-
-crawlWebsite(process.env.CRAWL_URL ?? '');
+connectDB()
+  .then(() => {
+    console.log('[App] Mongodb connected');
+  })
+  .then(() => {
+    startServer();
+  })
+  .catch((error) => {
+    console.log('[App Error]', error);
+    process.exit(0);
+  });

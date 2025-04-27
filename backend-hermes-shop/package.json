@@ -10,6 +10,7 @@
     "dev": "nodemon",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "crawl": "ts-node src/crawler/main.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

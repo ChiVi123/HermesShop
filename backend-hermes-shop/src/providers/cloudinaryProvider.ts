@@ -11,6 +11,9 @@ cloudinaryV2.config({
   api_secret: env.CLOUDINARY_API_SECRET,
 });
 
+function fileNameUpload(link: string, folderName: string) {
+  return cloudinaryV2.uploader.upload(link, { folder: folderName });
+}
 function streamUploadSingle(fileBuffer: Buffer, folderName: string) {
   return new Promise<UploadApiResponse | undefined>((resolve, reject) => {
     const stream = cloudinaryV2.uploader.upload_stream({ folder: folderName }, (err, result) => {
@@ -33,4 +36,10 @@ function deleteAssetArray(publicIds: string[]) {
   return Promise.all(promises);
 }
 
-export const cloudinaryProvider = { streamUploadSingle, streamUploadArray, deleteSingleAsset, deleteAssetArray };
+export const cloudinaryProvider = {
+  fileNameUpload,
+  streamUploadSingle,
+  streamUploadArray,
+  deleteSingleAsset,
+  deleteAssetArray,
+};
