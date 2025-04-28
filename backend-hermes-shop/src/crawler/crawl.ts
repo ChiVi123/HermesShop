@@ -1,10 +1,36 @@
 import type { Page } from 'puppeteer';
 import puppeteer from 'puppeteer';
+import env from '~/configs/environment';
 import { createImage } from '~/helpers/createImage';
 import type { Image } from '~/models/imageModel';
 import { cloudinaryProvider } from '~/providers/cloudinaryProvider';
 import { COLLECTION_PRODUCT_SELECTOR, LOGGING_PREFIX, PRODUCT_DETAIL_SELECTOR, SKU_SELECTOR } from './constants';
 import { urlValidation } from './utils';
+
+type Product = {
+  skus: Sku[];
+  category: string;
+  name: string;
+  shortDescription: string;
+  options: {
+    key: string;
+    type: string;
+  }[];
+  specs: {
+    key: string;
+    value: string;
+  }[];
+};
+
+type Sku = {
+  price: number;
+  discountPrice: number;
+  images: string[] | Image[];
+  specs: {
+    key: string;
+    value: string;
+  }[];
+};
 
 const imageCached: Map<string, Image> = new Map();
 
@@ -39,7 +65,7 @@ export async function crawlCollection(url: string) {
         product = await crawlWebsiteProduct(page);
         currentProcess++;
       } else {
-        const skus = await getSkuRaw(page);
+        const skus = await crawlProductSku(page);
         product.skus.push(...skus);
         currentProcess++;
       }
@@ -59,22 +85,10 @@ export async function crawlCollection(url: string) {
     logging.info(LOGGING_PREFIX, 'Upload images...');
 
     for (const sku of product.skus) {
-      for (let image of sku.images) {
-        if (!(typeof image === 'string')) continue;
-
-        const imageUrl = 'https:' + image;
-        if (!imageCached.has(image)) {
-          const imageRes = await cloudinaryProvider.fileNameUpload(imageUrl, 'hermes-shop/products');
-          const imageData = createImage(imageRes);
-          imageCached.set(image, imageData);
-          image = imageData;
-        } else {
-          image = imageCached.get(image)!;
-        }
-      }
+      sku.images = await uploadSkuImages(sku.images);
     }
 
-    logging.info(LOGGING_PREFIX, 'Upload images done!');
+    logging.info(LOGGING_PREFIX, 'Upload images done!', product.skus[0].images);
   } catch (error) {
     logging.danger(LOGGING_PREFIX, 'Error crawling website:', error);
   } finally {
@@ -86,20 +100,7 @@ export async function crawlCollection(url: string) {
     logging.info(LOGGING_PREFIX, 'Crawling collection finished');
   }
 }
-type Product = {
-  skus: Sku[];
-  category: string;
-  name: string;
-  shortDescription: string;
-  options: {
-    key: string;
-    type: string;
-  }[];
-  specs: {
-    key: string;
-    value: string;
-  }[];
-};
+
 async function crawlWebsiteProduct(page: Page): Promise<Product> {
   const product = await page.$eval(
     PRODUCT_DETAIL_SELECTOR.ROOT,
@@ -132,22 +133,12 @@ async function crawlWebsiteProduct(page: Page): Promise<Product> {
     },
     PRODUCT_DETAIL_SELECTOR,
   );
-
-  const skus = await getSkuRaw(page);
+  const skus = await crawlProductSku(page);
 
   return { ...product, skus };
 }
 
-type Sku = {
-  price: number;
-  discountPrice: number;
-  images: string[] | Image[];
-  specs: {
-    key: string;
-    value: string;
-  }[];
-};
-async function getSkuRaw(page: Page): Promise<Sku[]> {
+async function crawlProductSku(page: Page): Promise<Sku[]> {
   return page.$eval(
     SKU_SELECTOR.ROOT,
     (root, selector) => {
@@ -194,4 +185,18 @@ async function getSkuRaw(page: Page): Promise<Sku[]> {
     },
     SKU_SELECTOR,
   );
+}
+function uploadSkuImages(images: string[] | Image[]) {
+  const imagePromises = images.map(async (image) => {
+    if (typeof image !== 'string') return image;
+    if (imageCached.has(image)) return imageCached.get(image)!;
+
+    const imageUrl = 'https:' + image;
+    const imageRes = await cloudinaryProvider.fileNameUpload(imageUrl, env.CLOUDINARY_FOLDER_NAME + 'products');
+    const imageData = createImage(imageRes);
+    imageCached.set(image, imageData);
+    return imageData;
+  });
+
+  return Promise.all(imagePromises);
 }

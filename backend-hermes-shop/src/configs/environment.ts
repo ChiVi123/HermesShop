@@ -23,6 +23,7 @@ interface Environment {
   CLOUDINARY_CLOUD_NAME: string;
   CLOUDINARY_API_KEY: string;
   CLOUDINARY_API_SECRET: string;
+  CLOUDINARY_FOLDER_NAME: string;
 }
 interface EnvironmentMongo {
   MONGO_USERNAME: string;
@@ -67,6 +68,7 @@ const envValues = {
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
+  CLOUDINARY_FOLDER_NAME: process.env.CLOUDINARY_FOLDER_NAME,
 };
 
 const envSchema = Joi.object<Environment>({
@@ -91,6 +93,7 @@ const envSchema = Joi.object<Environment>({
   CLOUDINARY_CLOUD_NAME: Joi.string().trim().strict(),
   CLOUDINARY_API_KEY: Joi.string().trim().strict(),
   CLOUDINARY_API_SECRET: Joi.string().trim().strict(),
+  CLOUDINARY_FOLDER_NAME: Joi.string().trim().strict(),
 });
 
 const envValidated = envSchema.validate(envValues);
