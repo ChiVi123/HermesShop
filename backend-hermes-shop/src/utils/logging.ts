@@ -1,3 +1,11 @@
+declare global {
+  // eslint-disable-next-line no-var
+  var logging: {
+    info(...args: unknown[]): void;
+    danger(...args: unknown[]): void;
+  };
+}
+
 const LOG_STYLES = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
@@ -32,13 +40,19 @@ const LOG_STYLES = {
   },
 } as const;
 
-console.log = console.log.bind(
-  undefined,
-  `${LOG_STYLES.foreground.yellow}[${new Date().toLocaleString()}]${LOG_STYLES.reset}`,
-  `${LOG_STYLES.foreground.cyan}[SERVER-LOG]:${LOG_STYLES.reset}`,
-);
-console.error = console.error.bind(
-  undefined,
-  `${LOG_STYLES.foreground.yellow}[${new Date().toLocaleString()}]${LOG_STYLES.reset}`,
-  `${LOG_STYLES.foreground.red}[SERVER-ERROR]:${LOG_STYLES.reset}`,
-);
+globalThis.logging = globalThis.logging ?? {
+  info: function (...args: unknown[]) {
+    console.log(
+      `${LOG_STYLES.foreground.yellow}[${new Date().toLocaleString()}]${LOG_STYLES.reset}`,
+      `${LOG_STYLES.foreground.cyan}[SERVER-LOG]:${LOG_STYLES.reset}`,
+      ...args,
+    );
+  },
+  danger: function (...args: unknown[]) {
+    console.error(
+      `${LOG_STYLES.foreground.yellow}[${new Date().toLocaleString()}]${LOG_STYLES.reset}`,
+      `${LOG_STYLES.foreground.red}[SERVER-ERROR]:${LOG_STYLES.reset}`,
+      ...args,
+    );
+  },
+};

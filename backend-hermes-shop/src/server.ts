@@ -49,7 +49,7 @@ const startServer = () => {
   });
 };
 
-console.log('[App] Mongodb connecting...');
+logging.info('[App] Mongodb connecting...');
 
 connectDB()
   .then(() => {
