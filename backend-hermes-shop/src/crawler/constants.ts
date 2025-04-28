@@ -1,11 +1,11 @@
 export enum PRODUCT_DETAIL_SELECTOR {
-  ROOT = '.pdp-storytelling',
+  ROOT = '#pdp-container',
   NAME = 'h1',
   SHORT_DESCRIPTION = 'h1 ~ p > span',
   CATEGORY = 'div.PdpBreadcrumbs__trail a',
   IMAGE = 'div.PdpImageGallery__image img',
   PRICE = '.PdpPrice__price',
-  SPECIFICATION = 'div.PageSections > section[data-testid="attributes"] > div',
+  SPECIFICATION = '.PdpAttributes > div',
   SPECIFICATION_KEY = 'button.Dropdown__header',
   SPECIFICATION_VALUE = 'div.Dropdown__accordion > .Accordion > .hiddenChildren > div',
 }
@@ -15,7 +15,7 @@ export enum COLLECTION_PRODUCT_SELECTOR {
   ITEM_BUTTON = 'button.ThumbnailButton',
 }
 export enum SKU_SELECTOR {
-  ROOT = '.pdp-storytelling > div:first-child',
+  ROOT = '#pdp-container > div > div:first-child',
   LEFT_SIDE = '& > :not(aside)',
   ASIDE = 'aside',
   PRICE = 'h1 + div > p',
