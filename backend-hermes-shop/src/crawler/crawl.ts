@@ -5,7 +5,7 @@ import { createImage } from '~/helpers/createImage';
 import type { Image } from '~/models/imageModel';
 import { cloudinaryProvider } from '~/providers/cloudinaryProvider';
 import { COLLECTION_PRODUCT_SELECTOR, LOGGING_PREFIX, PRODUCT_DETAIL_SELECTOR, SKU_SELECTOR } from './constants';
-import { urlValidation } from './utils';
+import { randomInt, urlValidation } from './utils';
 
 type Product = {
   skus: Sku[];
@@ -25,12 +25,16 @@ type Product = {
 type Sku = {
   price: number;
   discountPrice: number;
+  stock: number;
   images: string[] | Image[];
   specs: {
     key: string;
     value: string;
   }[];
 };
+
+const MIN_STOCK = 10;
+const MAX_STOCK = 20;
 
 const imageCached: Map<string, Image> = new Map();
 
@@ -86,6 +90,7 @@ export async function crawlCollection(url: string) {
 
     for (const sku of product.skus) {
       sku.images = await uploadSkuImages(sku.images);
+      sku.stock = randomInt(MIN_STOCK, MAX_STOCK + 1);
     }
 
     logging.info(LOGGING_PREFIX, 'Upload images done!', product.skus[0].images);
@@ -170,6 +175,7 @@ async function crawlProductSku(page: Page): Promise<Sku[]> {
       return productSizes.map((size) => ({
         price,
         discountPrice,
+        stock: 1,
         images,
         specs: [
           {
