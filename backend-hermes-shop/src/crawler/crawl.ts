@@ -4,16 +4,26 @@ import env from '~/configs/environment';
 import { createImage } from '~/helpers/createImage';
 import type { Image } from '~/models/imageModel';
 import { cloudinaryProvider } from '~/providers/cloudinaryProvider';
-import { COLLECTION_PRODUCT_SELECTOR, LOGGING_PREFIX, PRODUCT_DETAIL_SELECTOR, SKU_SELECTOR } from './constants';
-import type { Product, Sku } from './types';
-import { randomInt, urlValidation } from './utils';
+import {
+  COLLECTION_PRODUCT_SELECTOR,
+  LOGGING_PREFIX,
+  PATH_FILE_JSON,
+  PRODUCT_DETAIL_SELECTOR,
+  SKU_SELECTOR,
+} from './constants';
+import type { DataJSON, Product, Sku } from './types';
+import { randomInt, readDataFromJsonFile, urlValidation } from './utils';
 
 const MIN_STOCK = 10;
 const MAX_STOCK = 20;
 
-const imageCached: Map<string, Image> = new Map();
+const dataJSON = readDataFromJsonFile<DataJSON>(PATH_FILE_JSON);
 
-export async function crawlCollection(url: string): Promise<Product[] | undefined> {
+const IMAGE_CACHED_FROM_FILE: Record<string, Image> = dataJSON.imageCached || {};
+const URL_CACHED_FROM_FILE: string[] = dataJSON.urlCached || [];
+const URL_CACHED: string[] = [];
+
+export async function crawlCollection(url: string): Promise<DataJSON | undefined> {
   if (!urlValidation(url)) return;
 
   logging.info(LOGGING_PREFIX, 'Website url:', url);
@@ -47,11 +57,11 @@ export async function crawlCollection(url: string): Promise<Product[] | undefine
       if (product) {
         products.push(product);
         currentProcess++;
-        logging.info(LOGGING_PREFIX, `${currentProcess}/${maxProductLength}`);
+        logging.info(LOGGING_PREFIX, `${currentProcess}/${maxProductLength}-(products)`);
       }
     }
 
-    return products;
+    return { products, imageCached: IMAGE_CACHED_FROM_FILE, urlCached: URL_CACHED };
   } catch (error) {
     logging.danger(LOGGING_PREFIX, 'Error crawling website:', error);
   } finally {
@@ -60,7 +70,7 @@ export async function crawlCollection(url: string): Promise<Product[] | undefine
     await page.close();
     await browser.close();
     logging.info(LOGGING_PREFIX, 'Page closed and browser closed');
-    logging.info(LOGGING_PREFIX, 'collection finished');
+    logging.info(LOGGING_PREFIX, 'Collection finished');
   }
 }
 async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Product | undefined> {
@@ -69,16 +79,22 @@ async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Prod
     return;
   }
 
+  const hrefLength = hrefList.length;
   let product = null;
+  let currentProcess = 0;
 
   for (const href of hrefList) {
     if (!urlValidation(href)) {
-      logging.info(LOGGING_PREFIX, 'Invalid URL:', href);
+      logging.info(LOGGING_PREFIX, `Invalid URL:\n${href}`);
       continue;
     }
-    await page.goto(href);
+    if (URL_CACHED_FROM_FILE.includes(href)) {
+      logging.info(LOGGING_PREFIX, `URL already crawled:\n${href}`);
+      continue;
+    }
 
-    logging.info(LOGGING_PREFIX, 'Href:', page.url());
+    URL_CACHED.push(href);
+    await page.goto(href);
 
     if (product === null) {
       product = await crawlProductRaw(page);
@@ -86,6 +102,9 @@ async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Prod
       const skus = await crawlProductSkuRaw(page);
       product.skus.push(...skus);
     }
+    currentProcess++;
+
+    logging.info(LOGGING_PREFIX, `${currentProcess}/${hrefLength} [${product.name}]`);
   }
 
   if (product === null) {
@@ -93,14 +112,15 @@ async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Prod
     return;
   }
 
-  // logging.info(LOGGING_PREFIX, 'Upload images...');
+  // Upload images
+  logging.info(LOGGING_PREFIX, `Upload images [${product.name}]...`);
 
   for (const sku of product.skus) {
-    // sku.images = await uploadSkuImages(sku.images);
+    sku.images = await uploadSkuImages(sku.images);
     sku.stock = randomInt(MIN_STOCK, MAX_STOCK + 1);
   }
 
-  // logging.info(LOGGING_PREFIX, 'Upload images done!');
+  logging.info(LOGGING_PREFIX, `Upload images done! [${product.name}]`);
 
   return product;
 }
@@ -190,15 +210,17 @@ async function crawlProductSkuRaw(page: Page): Promise<Sku[]> {
     SKU_SELECTOR,
   );
 }
-function uploadSkuImages(images: string[] | Image[]) {
+function uploadSkuImages(images: string[] | Image[]): Promise<Image[]> {
+  if (images.length === 0) return Promise.resolve([]);
+
   const imagePromises = images.map(async (image) => {
     if (typeof image !== 'string') return image;
-    if (imageCached.has(image)) return imageCached.get(image)!;
+    if (IMAGE_CACHED_FROM_FILE[image]) return IMAGE_CACHED_FROM_FILE[image];
 
     const imageUrl = 'https:' + image;
     const imageRes = await cloudinaryProvider.fileNameUpload(imageUrl, env.CLOUDINARY_FOLDER_NAME + 'products');
     const imageData = createImage(imageRes);
-    imageCached.set(image, imageData);
+    IMAGE_CACHED_FROM_FILE[image] = imageData;
     return imageData;
   });
 

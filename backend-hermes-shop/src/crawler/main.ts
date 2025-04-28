@@ -4,8 +4,10 @@ import '~/utils/logging';
 
 import 'express';
 
+import { PATH_FILE_JSON } from './constants';
 import { crawlCollection } from './crawl';
-import { saveDataToJsonFile } from './utils';
+import type { DataJSON } from './types';
+import { readDataFromJsonFile, saveDataToJsonFile } from './utils';
 
 // logging.info('[App] Mongodb connecting...');
 
@@ -30,13 +32,18 @@ import { saveDataToJsonFile } from './utils';
 //   });
 
 const startApp = async () => {
-  const productCollection = await crawlCollection(process.env.CRAWL_URL ?? '');
-  if (!productCollection) {
+  const data = await crawlCollection(process.env.CRAWL_URL ?? '');
+  if (!data) {
     logging.info('[App] No product collection created');
     return;
   }
+  const dataJSON = readDataFromJsonFile<DataJSON>(PATH_FILE_JSON);
 
-  saveDataToJsonFile('./src/crawler/crawl-data.json', productCollection);
+  dataJSON.products.push(...data.products);
+  Object.assign(dataJSON.imageCached, data.imageCached);
+  dataJSON.urlCached.push(...data.urlCached);
+
+  saveDataToJsonFile(PATH_FILE_JSON, dataJSON);
 };
 
 startApp();
