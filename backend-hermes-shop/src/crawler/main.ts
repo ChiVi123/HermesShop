@@ -4,22 +4,27 @@ import '~/utils/logging';
 
 import 'express';
 
+import readline from 'readline';
 import { PATH_PRODUCT_JSON } from './constants';
 import { crawlCollection } from './crawl';
-import type { ProductJSON } from './types';
+import { type ProductJSON } from './types';
+import { uploadImages } from './uploadImages';
 import { readDataFromJsonFile, saveDataToJsonFile } from './utils';
 
-// logging.info('[App] Mongodb connecting...');
+const LOGGING_APP_PREFIX = '[App]';
+const LOGGING_APP_ERROR_PREFIX = '[App Error]';
+
+// logging.info(LOGGING_APP_PREFIX, 'Mongodb connecting...');
 
 // connectDB()
 //   .then(() => {
-//     logging.info('[App] Mongodb connected');
+//     logging.info(LOGGING_APP_PREFIX, 'Mongodb connected');
 //   })
 //   .then(async () => {
 //     await startApp();
 
 //     AsyncExitHook(() => {
-//       logging.info('[App] Exit');
+//       logging.info(LOGGING_APP_PREFIX, 'Exit');
 //       closeDB();
 //     });
 //   })
@@ -34,7 +39,7 @@ import { readDataFromJsonFile, saveDataToJsonFile } from './utils';
 const crawlData = async () => {
   const data = await crawlCollection(process.env.CRAWL_URL ?? '');
   if (!data) {
-    logging.info('[App] No product collection created');
+    logging.info(LOGGING_APP_PREFIX, 'No product collection created');
     return;
   }
   const dataJSON = readDataFromJsonFile<ProductJSON>(PATH_PRODUCT_JSON);
@@ -52,4 +57,51 @@ const crawlData = async () => {
   saveDataToJsonFile(PATH_PRODUCT_JSON, dataJSON);
 };
 
-crawlData();
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+logging.info(LOGGING_APP_PREFIX, 'Listening input...');
+rl.on('line', async (input) => {
+  const dataJSON = readDataFromJsonFile<ProductJSON>(PATH_PRODUCT_JSON);
+  const jsonProducts = dataJSON.products || [];
+
+  switch (input.trim()) {
+    case 'crawl':
+      logging.info(LOGGING_APP_PREFIX, 'Starting crawl...');
+      crawlData().catch((error) => logging.danger(LOGGING_APP_ERROR_PREFIX, error));
+      break;
+    case 'img':
+      logging.info(LOGGING_APP_PREFIX, 'Starting upload image...');
+
+      for (const product of jsonProducts) {
+        logging.info(LOGGING_APP_PREFIX, `[${product.name}]`);
+
+        for (const sku of product.skus) {
+          if (sku.images) {
+            sku.images = await uploadImages(sku.images);
+          }
+        }
+        logging.info(LOGGING_APP_PREFIX, `[${product.name}] Uploaded images`);
+      }
+
+      saveDataToJsonFile(PATH_PRODUCT_JSON, dataJSON);
+
+      break;
+    case 'help':
+      console.log('\nUsage: ');
+      console.log('crawl - Start crawling data');
+      console.log('img (image) - Start uploading images');
+      console.log('help - Show help');
+      console.log('exit or other - Exit the application\n');
+      break;
+    case 'exit':
+    default:
+      logging.info(LOGGING_APP_PREFIX, 'Exiting...');
+      rl.close();
+      process.exit(0);
+  }
+
+  logging.info(LOGGING_APP_PREFIX, 'Listening input...');
+});
