@@ -1,29 +1,23 @@
 import type { Page } from 'puppeteer';
 import puppeteer from 'puppeteer';
-import env from '~/configs/environment';
-import { createImage } from '~/helpers/createImage';
-import type { Image } from '~/models/imageModel';
-import { cloudinaryProvider } from '~/providers/cloudinaryProvider';
 import {
   COLLECTION_PRODUCT_SELECTOR,
   LOGGING_PREFIX,
-  PATH_FILE_JSON,
+  PATH_PRODUCT_JSON,
   PRODUCT_DETAIL_SELECTOR,
   SKU_SELECTOR,
 } from './constants';
-import type { DataJSON, Product, Sku } from './types';
+import type { Product, ProductJSON, Sku } from './types';
 import { randomInt, readDataFromJsonFile, urlValidation } from './utils';
 
 const MIN_STOCK = 10;
 const MAX_STOCK = 20;
 
-const dataJSON = readDataFromJsonFile<DataJSON>(PATH_FILE_JSON);
+const URL_CACHED_FROM_FILE: ProductJSON['urlCached'] =
+  readDataFromJsonFile<ProductJSON>(PATH_PRODUCT_JSON).urlCached || {};
+const URL_CACHED: ProductJSON['urlCached'] = {};
 
-const IMAGE_CACHED_FROM_FILE: Record<string, Image> = dataJSON.imageCached || {};
-const URL_CACHED_FROM_FILE: string[] = dataJSON.urlCached || [];
-const URL_CACHED: string[] = [];
-
-export async function crawlCollection(url: string): Promise<DataJSON | undefined> {
+export async function crawlCollection(url: string): Promise<ProductJSON | undefined> {
   if (!urlValidation(url)) return;
 
   logging.info(LOGGING_PREFIX, 'Website url:', url);
@@ -57,11 +51,11 @@ export async function crawlCollection(url: string): Promise<DataJSON | undefined
       if (product) {
         products.push(product);
         currentProcess++;
-        logging.info(LOGGING_PREFIX, `${currentProcess}/${maxProductLength}-(products)`);
+        logging.info(LOGGING_PREFIX, `[PRODUCTS] ${currentProcess}/${maxProductLength}`);
       }
     }
 
-    return { products, imageCached: IMAGE_CACHED_FROM_FILE, urlCached: URL_CACHED };
+    return { products, urlCached: URL_CACHED };
   } catch (error) {
     logging.danger(LOGGING_PREFIX, 'Error crawling website:', error);
   } finally {
@@ -75,7 +69,7 @@ export async function crawlCollection(url: string): Promise<DataJSON | undefined
 }
 async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Product | undefined> {
   if (hrefList.length === 0) {
-    logging.info(LOGGING_PREFIX, 'No product found');
+    logging.info(LOGGING_PREFIX, 'No link found');
     return;
   }
 
@@ -85,42 +79,38 @@ async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Prod
 
   for (const href of hrefList) {
     if (!urlValidation(href)) {
-      logging.info(LOGGING_PREFIX, `Invalid URL:\n${href}`);
+      logging.info(LOGGING_PREFIX, `[Invalid URL]: \n${href}`);
       continue;
     }
-    if (URL_CACHED_FROM_FILE.includes(href)) {
-      logging.info(LOGGING_PREFIX, `URL already crawled:\n${href}`);
+    const url = new URL(href);
+    if (URL_CACHED_FROM_FILE[href]) {
+      logging.info(LOGGING_PREFIX, `[Already URL]: ${url.pathname}`);
       continue;
     }
 
-    URL_CACHED.push(href);
+    URL_CACHED[href] = true;
     await page.goto(href);
+
+    logging.info(LOGGING_PREFIX, 'Product ...', url.pathname);
 
     if (product === null) {
       product = await crawlProductRaw(page);
     } else {
       const skus = await crawlProductSkuRaw(page);
       product.skus.push(...skus);
+      product.skus.forEach((sku) => {
+        sku.stock = randomInt(MIN_STOCK, MAX_STOCK + 1);
+      });
     }
     currentProcess++;
 
-    logging.info(LOGGING_PREFIX, `${currentProcess}/${hrefLength} [${product.name}]`);
+    logging.info(LOGGING_PREFIX, `[${product.name}] ${currentProcess}/${hrefLength}`);
   }
 
   if (product === null) {
     logging.info(LOGGING_PREFIX, 'No product found');
     return;
   }
-
-  // Upload images
-  logging.info(LOGGING_PREFIX, `Upload images [${product.name}]...`);
-
-  for (const sku of product.skus) {
-    sku.images = await uploadSkuImages(sku.images);
-    sku.stock = randomInt(MIN_STOCK, MAX_STOCK + 1);
-  }
-
-  logging.info(LOGGING_PREFIX, `Upload images done! [${product.name}]`);
 
   return product;
 }
@@ -131,7 +121,7 @@ async function crawlProductRaw(page: Page): Promise<Product> {
       const [, , category] = root.querySelectorAll(selector.CATEGORY);
 
       return {
-        category: category.textContent?.trim() ?? '',
+        category: category?.textContent?.trim() ?? 'Sandals',
         name: root.querySelector(selector.NAME)?.textContent?.trim() ?? '',
         shortDescription: root.querySelector(selector.SHORT_DESCRIPTION)?.textContent?.trim() ?? '',
         options: [
@@ -209,20 +199,4 @@ async function crawlProductSkuRaw(page: Page): Promise<Sku[]> {
     },
     SKU_SELECTOR,
   );
-}
-function uploadSkuImages(images: string[] | Image[]): Promise<Image[]> {
-  if (images.length === 0) return Promise.resolve([]);
-
-  const imagePromises = images.map(async (image) => {
-    if (typeof image !== 'string') return image;
-    if (IMAGE_CACHED_FROM_FILE[image]) return IMAGE_CACHED_FROM_FILE[image];
-
-    const imageUrl = 'https:' + image;
-    const imageRes = await cloudinaryProvider.fileNameUpload(imageUrl, env.CLOUDINARY_FOLDER_NAME + 'products');
-    const imageData = createImage(imageRes);
-    IMAGE_CACHED_FROM_FILE[image] = imageData;
-    return imageData;
-  });
-
-  return Promise.all(imagePromises);
 }

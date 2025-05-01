@@ -4,9 +4,9 @@ import '~/utils/logging';
 
 import 'express';
 
-import { PATH_FILE_JSON } from './constants';
+import { PATH_PRODUCT_JSON } from './constants';
 import { crawlCollection } from './crawl';
-import type { DataJSON } from './types';
+import type { ProductJSON } from './types';
 import { readDataFromJsonFile, saveDataToJsonFile } from './utils';
 
 // logging.info('[App] Mongodb connecting...');
@@ -31,19 +31,25 @@ import { readDataFromJsonFile, saveDataToJsonFile } from './utils';
 //     process.exit(0);
 //   });
 
-const startApp = async () => {
+const crawlData = async () => {
   const data = await crawlCollection(process.env.CRAWL_URL ?? '');
   if (!data) {
     logging.info('[App] No product collection created');
     return;
   }
-  const dataJSON = readDataFromJsonFile<DataJSON>(PATH_FILE_JSON);
+  const dataJSON = readDataFromJsonFile<ProductJSON>(PATH_PRODUCT_JSON);
 
-  dataJSON.products.push(...data.products);
-  Object.assign(dataJSON.imageCached, data.imageCached);
-  dataJSON.urlCached.push(...data.urlCached);
+  data.products.forEach((product) => {
+    const existingProductIndex = dataJSON.products.findIndex((p) => p.name === product.name);
+    if (existingProductIndex !== -1) {
+      dataJSON.products[existingProductIndex] = product; // Update existing product
+    } else {
+      dataJSON.products.push(product); // Add new product
+    }
+  });
+  Object.assign(dataJSON.urlCached, data.urlCached);
 
-  saveDataToJsonFile(PATH_FILE_JSON, dataJSON);
+  saveDataToJsonFile(PATH_PRODUCT_JSON, dataJSON);
 };
 
-startApp();
+crawlData();

@@ -1,5 +1,3 @@
-import type { Image } from '~/models/imageModel';
-
 export type Product = {
   skus: Sku[];
   category: string;
@@ -18,14 +16,13 @@ export type Sku = {
   price: number;
   discountPrice: number;
   stock: number;
-  images: string[] | Image[];
+  images: string[];
   specs: {
     key: string;
     value: string;
   }[];
 };
-export type DataJSON = {
+export type ProductJSON = {
   products: Product[];
-  imageCached: Record<string, Image>;
-  urlCached: string[];
+  urlCached: Record<string, boolean>;
 };
