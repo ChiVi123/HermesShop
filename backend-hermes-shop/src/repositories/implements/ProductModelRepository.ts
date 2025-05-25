@@ -16,7 +16,8 @@ const baseSchema = getBaseValidSchema<ProductModel>();
 const SCHEMA = baseSchema.keys({
   name: Joi.string().required().trim().strict(),
   slugify: Joi.string().required().trim().strict(),
-  shortDescription: Joi.string().trim().strict(),
+  // shortDescription: Joi.string().trim().strict(),
+  shortDescription: Joi.string().trim().strict().allow(''),
   categoryId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
   gender: Joi.string()
     .valid(...Object.values(GENDER_KEYS))
