@@ -18,7 +18,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang='en'>
       <body className={`${nunitoSans.variable} antialiased`}>
         <Header />
-        {children}
+        <main>{children}</main>
       </body>
     </html>
   );
