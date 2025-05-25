@@ -24,8 +24,8 @@ export type Sku = {
     value: string;
   }[];
 };
-export type DataJSON = {
+export type ProductJSON = {
   products: Product[];
-  imageCached: Record<string, Image>;
-  urlCached: string[];
+  urlCached: Record<string, boolean>;
 };
+export type ImageMap = Record<string, Image>;

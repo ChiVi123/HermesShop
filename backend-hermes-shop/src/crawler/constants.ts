@@ -25,4 +25,5 @@ export enum SKU_SELECTOR {
   SIZE_LIST = '#pdp-size-selector ul.PdpSizeSelector__grid > li.PdpSizeSelector__grid-item > button',
 }
 export const LOGGING_PREFIX = '[Crawl]';
-export const PATH_FILE_JSON = './src/crawler/crawl-data.json';
+export const PATH_PRODUCT_JSON = './src/crawler/crawl-product.json';
+export const PATH_IMAGE_JSON = './src/crawler/crawl-image.json';

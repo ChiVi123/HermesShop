@@ -14,7 +14,7 @@ export default defineConfig([
       '@typescript-eslint/consistent-type-imports': 'warn',
       '@typescript-eslint/method-signature-style': 'off',
       '@typescript-eslint/no-unused-vars': 'warn',
-      indent: ['warn', 2],
+      indent: ['warn', 2, { SwitchCase: 1 }],
       semi: [1, 'always'],
     },
     ignores: ['**/node_modules/**/*', 'build/**/*'],

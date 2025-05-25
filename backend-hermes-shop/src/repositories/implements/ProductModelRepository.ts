@@ -8,7 +8,7 @@ import type { ModelId } from '~/core/model/types';
 import { RepositoryMongoDB } from '~/core/repository/RepositoryMongoDB';
 import getBaseValidSchema from '~/helpers/getBaseValidSchema';
 import NextError from '~/helpers/nextError';
-import type { ProductAttr, ProductModel, ProductModelProperties, ProductOption } from '~/models/productModel';
+import type { ProductModel, ProductModelProperties, ProductOption, ProductSpec } from '~/models/productModel';
 import type { ProductRepository } from '~/repositories/productRepository';
 
 const baseSchema = getBaseValidSchema<ProductModel>();
@@ -16,15 +16,16 @@ const baseSchema = getBaseValidSchema<ProductModel>();
 const SCHEMA = baseSchema.keys({
   name: Joi.string().required().trim().strict(),
   slugify: Joi.string().required().trim().strict(),
-  shortDescription: Joi.string().trim().strict(),
+  // shortDescription: Joi.string().trim().strict(),
+  shortDescription: Joi.string().trim().strict().allow(''),
   categoryId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
   gender: Joi.string()
     .valid(...Object.values(GENDER_KEYS))
     .default(GENDER_KEYS.MEN),
   rating: Joi.number().positive().default(0),
-  attrs: Joi.array()
+  specs: Joi.array()
     .items(
-      Joi.object<ProductAttr>({
+      Joi.object<ProductSpec>({
         key: Joi.string().required().trim().strict(),
         value: Joi.string().required().trim().strict(),
       }),
@@ -43,7 +44,7 @@ const SCHEMA = baseSchema.keys({
   skuIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
   _status: Joi.string()
     .valid(...Object.values(STATUS_PRODUCT_KEYS))
-    .default(STATUS_PRODUCT_KEYS.PRODUCT),
+    .default(STATUS_PRODUCT_KEYS.RAW),
 });
 const INVALID_FIELDS: ProductModelProperties[] = ['_id', 'createdAt'];
 
