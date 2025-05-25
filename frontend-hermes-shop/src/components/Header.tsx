@@ -1,8 +1,8 @@
 'use client';
 
-import { Separator } from '@/components/ui/separator';
 import { SearchIcon, ShoppingCartIcon, UserIcon } from 'lucide-react';
 import Link from 'next/link';
+import { Separator } from '~/components/ui/separator';
 
 export default function Header() {
   return (

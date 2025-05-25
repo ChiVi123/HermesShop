@@ -1,6 +1,6 @@
-import Header from '@/components/Header';
 import type { Metadata } from 'next';
 import { Nunito_Sans } from 'next/font/google';
+import Header from '~/components/Header';
 import './globals.css';
 
 const nunitoSans = Nunito_Sans({
