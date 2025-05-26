@@ -22,7 +22,7 @@ export class ProductService {
   }
 
   public getAll() {
-    return this.productRepository.collection.find().toArray();
+    return this.productRepository.findAll();
   }
 
   public async getDetail(slugify: string) {
