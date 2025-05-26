@@ -53,6 +53,39 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
     super(COLLECTION_NAME_KEYS.PRODUCTS, SCHEMA, { invalidFields: INVALID_FIELDS });
   }
 
+  public findAll() {
+    return this.collection
+      .aggregate([
+        {
+          $lookup: {
+            from: COLLECTION_NAME_KEYS.SKUS,
+            localField: '_id',
+            foreignField: 'productId',
+            as: 'skus',
+          },
+        },
+        {
+          $lookup: {
+            from: COLLECTION_NAME_KEYS.CATEGORIES,
+            localField: 'categoryId',
+            foreignField: '_id',
+            as: 'category',
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            sku: {
+              $arrayElemAt: ['$skus', 0],
+            },
+            category: 1,
+          },
+        },
+      ])
+      .toArray();
+  }
+
   public findOneByName(name: string): Promise<WithId<ProductModel> | null> {
     return this.collection.findOne({ name });
   }
