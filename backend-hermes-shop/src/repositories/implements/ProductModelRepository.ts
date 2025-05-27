@@ -76,10 +76,15 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
           $project: {
             _id: 1,
             name: 1,
+            shortDescription: 1,
+            gender: 1,
+            slugify: 1,
+            category: {
+              $arrayElemAt: ['$category', 0],
+            },
             sku: {
               $arrayElemAt: ['$skus', 0],
             },
-            category: 1,
           },
         },
       ])
