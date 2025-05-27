@@ -1,5 +1,4 @@
 import { ChevronDownIcon, StarHalfIcon, StarIcon } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import {
   Breadcrumb,
@@ -10,7 +9,7 @@ import {
 } from '~/components/ui/breadcrumb';
 import { Button } from '~/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '~/components/ui/collapsible';
-import { cn } from '~/lib/utils';
+import ProductImageSelect from './components/ProductImageSelect';
 
 export default async function ProductDetailsPage({ params }: { params: Promise<{ slugify: string }> }) {
   const { slugify } = await params;
@@ -22,31 +21,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
   return (
     <>
       <section className='grid grid-cols-12 gap-14 px-10 mt-12'>
-        <div className='col-span-7 flex gap-6'>
-          <div className='flex flex-col gap-1.5'>
-            {sku.images.map((item, index) => (
-              <Image
-                key={item.publicId}
-                src={item.url as string}
-                alt={item.publicId}
-                width={62}
-                height={62}
-                className={cn({ 'ring-ring ring-2': index === 0 })}
-              />
-            ))}
-          </div>
-
-          <div className='bg-accent aspect-square'>
-            <Image
-              key={sku.images[0].publicId}
-              src={sku.images[0].url as string}
-              alt={sku.images[0].publicId}
-              width={575}
-              height={575}
-              className='size-full'
-            />
-          </div>
-        </div>
+        <ProductImageSelect images={sku.images} />
 
         <div className='col-span-5'>
           <Breadcrumb className='mb-1'>
@@ -114,7 +89,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
       <section className='px-10 mt-12'>
         {result.specs.map(({ key, value }) => (
           <Collapsible key={key} className='border-border border-t'>
-            <CollapsibleTrigger className='flex items-center justify-between w-full py-6 text-3xl font-bold group'>
+            <CollapsibleTrigger className='flex items-center justify-between w-full py-6 text-2xl font-bold group'>
               {key}
               <ChevronDownIcon className='transition-transform duration-500 ease-in-out group-[&[data-state="open"]]:rotate-180' />
             </CollapsibleTrigger>
