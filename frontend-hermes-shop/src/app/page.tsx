@@ -26,8 +26,8 @@ export default async function Home() {
 
   return (
     <div className='my-12'>
-      <section className='px-10 mb-10'>
-        <div className='flex items-center gap-2 w-full'>
+      <section className='mb-10'>
+        <div className='flex items-center gap-2 w-full px-10'>
           {SLIDES.map((item) => (
             <div key={item.title} className='relative w-1/3 min-w-1/3 aspect-[4/5] overflow-hidden group'>
               <Image
@@ -47,6 +47,56 @@ export default async function Home() {
         </div>
       </section>
 
+      <section className='mb-10'>
+        <div className='grid grid-cols-2 gap-2 px-10'>
+          <div className='relative overflow-hidden group'>
+            <Image
+              src='/images/home_page_rock_and_stroll.avif'
+              alt='home_page_rock_and_stroll'
+              width={2000 * 0.4}
+              height={2000 * 0.4}
+              priority
+              className='size-full object-cover -z-10 transition-transform duration-300 ease-in-out will-change-transform group-hover:scale-105'
+            />
+
+            <div className='absolute right-0 bottom-0 left-0 p-10 text-white'>
+              <p className='text-2xl font-bold'>Rock And Stroll In Comfort</p>
+              <p className='text-lg'>
+                Effortlessly comfy styles take color cues from the Southwest’s rustic rock formations.
+              </p>
+            </div>
+          </div>
+
+          {Array.isArray(result) && (
+            <div className='grid grid-cols-2 gap-2'>
+              {result.slice(0, 4).map(({ _id, name, sku }) => (
+                <div key={_id} className='bg-accent'>
+                  <div className='mb-2 overflow-hidden group'>
+                    <Image
+                      src={sku.images[0].url}
+                      alt={name}
+                      width={sku.images[0].width * 0.25}
+                      height={sku.images[0].height * 0.25}
+                      className='size-full transition-transform duration-300 ease-in-out will-change-transform group-hover:scale-105'
+                    />
+                  </div>
+
+                  <div className='flex justify-between px-4'>
+                    <p className='text-sm font-bold'>{name}</p>
+                    <p className='flex items-center gap-1 text-xs font-semibold'>
+                      <span className='text-red-800'>$90</span>
+                      <span className='line-through'>${sku.price}</span>
+                    </p>
+                  </div>
+
+                  <p className='p-4 text-xs font-semibold'>{sku.specs[0].value.replace(/\s*\(.*?\)/, '')}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
       <section>
         <h2 className='px-10 mb-8 text-xl font-bold'>More To Shop</h2>
 
@@ -61,8 +111,8 @@ export default async function Home() {
                         <Image
                           src={sku.images[0].url}
                           alt={name}
-                          width={sku.images[0].width * 0.75}
-                          height={sku.images[0].height * 0.75}
+                          width={sku.images[0].width * 0.1}
+                          height={sku.images[0].height * 0.1}
                           className='size-full transition-transform duration-300 ease-in-out will-change-transform group-hover:scale-105'
                         />
                       </div>
