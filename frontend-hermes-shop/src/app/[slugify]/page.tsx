@@ -16,7 +16,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
   const serverApi = process.env.SERVER_API ? process.env.SERVER_API + `/v1/products/${slugify}` : '/api';
   const result = await fetch(serverApi).then((data) => data.json());
 
-  const sku = result.skus[78];
+  const sku = result.skus[0];
 
   return (
     <>

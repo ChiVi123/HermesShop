@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '~/lib/utils';
 
 type ImageItem = {
@@ -18,6 +18,10 @@ interface Props {
 
 export default function ProductImageSelect({ images, className }: Props) {
   const [image, setImage] = useState<ImageItem>(images[0]);
+
+  useEffect(() => {
+    setImage(images[0]);
+  }, [images]);
 
   return (
     <div className={cn('col-span-7 flex gap-6', className)}>
