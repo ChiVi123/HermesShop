@@ -14,6 +14,7 @@ import defineRoutes from '~/core/defineRoutes';
 import { closeDB, connectDB } from '~/core/mongodb';
 import errorHandlingMiddleware from '~/middlewares/errorHandlingMiddleware';
 import routeNotFoundMiddleware from '~/middlewares/routeNotFoundMiddleware';
+import { PREFIX_APP_ERROR_LOG, PREFIX_APP_LOG } from './utils/constants';
 
 // config slug charmap
 slug.charmap['/'] = '-';
@@ -25,40 +26,42 @@ const startServer = () => {
     res.set('Cache-Control', 'no-store');
     next();
   });
-  console.log('[App] Disable webpage caching');
+  logging.info(`${PREFIX_APP_LOG} Disable webpage caching`);
 
   app.use(cookieParser());
   app.use(cors(corsOptions));
   app.use(express.json());
-  console.log('[App] Added middlewares');
+  logging.info(`${PREFIX_APP_LOG} Added middlewares`);
 
   defineRoutes(v1Controllers, app);
-  console.log('[App] Defined Controller Routing');
+  logging.info(`${PREFIX_APP_LOG} Defined Controller Routing`);
 
   app.use(routeNotFoundMiddleware);
   app.use(errorHandlingMiddleware);
-  console.log('[App] Added error middlewares');
+  logging.info(`${PREFIX_APP_LOG} Added error middlewares`);
 
   app.listen(env.LOCAL_SERVER_PORT, () => {
-    console.log(`[App] Server Started, running http://${env.LOCAL_SERVER_HOSTNAME}:${env.LOCAL_SERVER_PORT}`);
+    logging.info(
+      `${PREFIX_APP_LOG} Server Started, running http://${env.LOCAL_SERVER_HOSTNAME}:${env.LOCAL_SERVER_PORT}`,
+    );
   });
 
   AsyncExitHook(() => {
-    console.log('[App] Exit');
+    logging.info(`${PREFIX_APP_LOG} Exit`);
     closeDB();
   });
 };
 
-logging.info('[App] Mongodb connecting...');
+logging.info(`${PREFIX_APP_LOG} Mongodb connecting...`);
 
 connectDB()
   .then(() => {
-    console.log('[App] Mongodb connected');
+    logging.info(`${PREFIX_APP_LOG} Mongodb connected`);
   })
   .then(() => {
     startServer();
   })
   .catch((error) => {
-    console.log('[App Error]', error);
+    logging.info(PREFIX_APP_ERROR_LOG, error);
     process.exit(0);
   });
