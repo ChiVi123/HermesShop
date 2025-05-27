@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '~/components/ui/carousel';
 
@@ -21,7 +22,7 @@ const SLIDES = [
 ];
 
 export default async function Home() {
-  const serverApi = process.env.SERVER_API ? process.env.SERVER_API + '/v1/products/all' : '/';
+  const serverApi = process.env.SERVER_API ? process.env.SERVER_API + '/v1/products/all' : '/api';
   const result = await fetch(serverApi).then((data) => data.json());
 
   return (
@@ -103,31 +104,33 @@ export default async function Home() {
         {Array.isArray(result) && (
           <Carousel opts={{ align: 'start', loop: true }} className='[&_>_div]:px-10'>
             <CarouselContent className='-ml-2'>
-              {result.map(({ _id, name, sku }) => (
+              {result.map(({ _id, name, slugify, sku }) => (
                 <CarouselItem key={_id} className='basis-1/4 pl-2'>
-                  <Card className='gap-4 py-0 h-full border-0 rounded-none shadow-none'>
-                    <CardHeader className='px-0'>
-                      <div className='mb-2 bg-accent overflow-hidden group'>
-                        <Image
-                          src={sku.images[0].url}
-                          alt={name}
-                          width={sku.images[0].width * 0.1}
-                          height={sku.images[0].height * 0.1}
-                          className='size-full transition-transform duration-300 ease-in-out will-change-transform group-hover:scale-105'
-                        />
-                      </div>
+                  <Link href={`/${slugify}`} className='h-full'>
+                    <Card className='gap-4 py-0 h-full border-0 rounded-none shadow-none group'>
+                      <CardHeader className='px-0'>
+                        <div className='mb-2 bg-accent overflow-hidden'>
+                          <Image
+                            src={sku.images[0].url}
+                            alt={name}
+                            width={sku.images[0].width * 0.1}
+                            height={sku.images[0].height * 0.1}
+                            className='size-full transition-transform duration-300 ease-in-out will-change-transform group-hover:scale-105'
+                          />
+                        </div>
 
-                      <CardTitle className='font-bold'>{name}</CardTitle>
-                      <CardDescription className='text-base'>
-                        {sku.specs[0].value.replace(/\s*\(.*?\)/, '')}
-                      </CardDescription>
-                    </CardHeader>
+                        <CardTitle className='font-bold'>{name}</CardTitle>
+                        <CardDescription className='text-base'>
+                          {sku.specs[0].value.replace(/\s*\(.*?\)/, '')}
+                        </CardDescription>
+                      </CardHeader>
 
-                    <CardContent className='flex items-center gap-1 px-0 font-semibold'>
-                      <span className='text-red-800'>$90</span>
-                      <span className='line-through'>${sku.price}</span>
-                    </CardContent>
-                  </Card>
+                      <CardContent className='flex items-center gap-1 px-0 font-semibold'>
+                        <span className='text-red-800'>$90</span>
+                        <span className='line-through'>${sku.price}</span>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 </CarouselItem>
               ))}
             </CarouselContent>
