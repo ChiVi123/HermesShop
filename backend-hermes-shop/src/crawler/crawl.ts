@@ -112,6 +112,8 @@ async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Prod
     return;
   }
 
+  logging.info(LOGGING_PREFIX, `[${product.name}] [${product.specs.map((item) => item.key)}]`);
+
   return product;
 }
 async function crawlProductRaw(page: Page): Promise<Product> {
@@ -140,7 +142,11 @@ async function crawlProductRaw(page: Page): Promise<Product> {
             el
               .querySelector(selector.SPECIFICATION_VALUE)
               ?.innerHTML.trim()
-              .replace(/ (class|id|role|data-testid|aria-labelledby|tabindex)="[^"]*"/g, '') ?? '',
+              .replace(/ (class)="[^"]*"/g, '')
+              .replace(
+                /<div[^>]*data-testid="size-chart-scrollbar"[^>]*role="scrollbar"[^>]*>[\s\S]*?<\/div><\/div>/g,
+                '',
+              ) ?? '',
         })),
       };
     },
