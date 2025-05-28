@@ -53,6 +53,28 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+@theme {
+  --animate-collapsible-down: collapsible-down 500ms ease-out;
+  --animate-collapsible-up: collapsible-up 500ms ease-out;
+
+  @keyframes collapsible-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-collapsible-content-height);
+    }
+  }
+  @keyframes collapsible-up {
+    from {
+      height: var(--radix-collapsible-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -128,5 +150,45 @@
   }
   body {
     @apply bg-background text-foreground font-nunito;
+  }
+
+  .text-editor-display p {
+    @apply max-w-3xl mb-4;
+  }
+
+  .text-editor-display ul {
+    @apply pl-4 mb-6 list-outside list-disc;
+  }
+
+  .text-editor-display a {
+    @apply font-bold underline;
+  }
+
+  .text-editor-display h2 {
+    @apply mb-3 font-bold uppercase tracking-widest;
+  }
+
+  .text-editor-display h2 + div {
+    @apply mb-6;
+  }
+
+  .text-editor-display h2 + div > div > div {
+    @apply min-w-full overflow-x-auto;
+  }
+
+  .text-editor-display h2 + div > div > div > div {
+    @apply flex w-max;
+  }
+
+  .text-editor-display h2 + div > div > div > div > div:first-of-type {
+    @apply w-44;
+  }
+
+  .text-editor-display h2 + div > div > div > div > div {
+    @apply flex items-center justify-center w-28 p-4 border-r border-b border-border;
+  }
+
+  .text-editor-display h2 + div > div > div > div > div:nth-child(odd) {
+    @apply bg-accent;
   }
 }
