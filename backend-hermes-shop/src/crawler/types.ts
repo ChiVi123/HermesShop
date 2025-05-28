@@ -1,7 +1,6 @@
 import type { Image } from '~/models/imageModel';
 
 export type Product = {
-  skus: Sku[];
   category: string;
   name: string;
   shortDescription: string;
@@ -9,12 +8,13 @@ export type Product = {
     key: string;
     type: string;
   }[];
-  specs: {
+  attrs: {
     key: string;
     value: string;
   }[];
 };
 export type Sku = {
+  productId: string;
   price: number;
   discountPrice: number;
   stock: number;
@@ -28,4 +28,6 @@ export type ProductJSON = {
   products: Product[];
   urlCached: Record<string, boolean>;
 };
-export type ImageMap = Record<string, Image>;
+export type ImageJSON = Record<string, Image>;
+export type ProductInfoJSON = Record<string, Product>;
+export type SkuJSON = Record<string, Sku[]>;
