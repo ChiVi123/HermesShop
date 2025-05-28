@@ -1,5 +1,6 @@
-import { ChevronDownIcon, StarHalfIcon, StarIcon } from 'lucide-react';
+import { StarHalfIcon, StarIcon } from 'lucide-react';
 import Link from 'next/link';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '~/components/ui/accordion';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,7 +9,6 @@ import {
   BreadcrumbSeparator,
 } from '~/components/ui/breadcrumb';
 import { Button } from '~/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '~/components/ui/collapsible';
 import ProductImageSelect from './components/ProductImageSelect';
 
 export default async function ProductDetailsPage({ params }: { params: Promise<{ slugify: string }> }) {
@@ -87,17 +87,16 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
       </section>
 
       <section className='px-10 mt-12'>
-        {result.specs.map(({ key, value }) => (
-          <Collapsible key={key} className='border-border border-t'>
-            <CollapsibleTrigger className='flex items-center justify-between w-full py-6 text-2xl font-bold group'>
-              {key}
-              <ChevronDownIcon className='transition-transform duration-500 ease-in-out group-[&[data-state="open"]]:rotate-180' />
-            </CollapsibleTrigger>
-            <CollapsibleContent className='bg-white overflow-hidden transition-[height] data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down'>
-              <div dangerouslySetInnerHTML={{ __html: value }}></div>
-            </CollapsibleContent>
-          </Collapsible>
-        ))}
+        <Accordion type='single' collapsible className='w-full'>
+          {result.specs.map(({ key, value }) => (
+            <AccordionItem key={key} value={key}>
+              <AccordionTrigger className='text-xl font-bold'>{key}</AccordionTrigger>
+              <AccordionContent>
+                <div dangerouslySetInnerHTML={{ __html: value }} className='text-editor-display'></div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </section>
     </>
   );
