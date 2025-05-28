@@ -8,10 +8,17 @@ import AsyncExitHook from 'async-exit-hook';
 import readline from 'readline';
 import slug from 'slug';
 import { closeDB, connectDB } from '~/core/mongodb';
+import { PATH_SKU_JSON } from './constants';
 import { crawlCollection } from './crawl';
+import type { SkuJSON } from './types';
+import { uploadImages } from './uploadImages';
+import { randomInt, readDataFromJsonFile, saveDataToJsonFile } from './utils';
 
 const LOGGING_APP_PREFIX = '[App]';
 const LOGGING_APP_ERROR_PREFIX = '[App Error]';
+
+const MIN_STOCK = 10;
+const MAX_STOCK = 20;
 
 // config slug charmap
 slug.charmap['/'] = '-';
@@ -26,8 +33,6 @@ function startReadline(): void {
 
   logging.info(LOGGING_APP_PREFIX, 'Listening input...');
   rl.on('line', async (input) => {
-    // const dataJSON = readDataFromJsonFile<ProductJSON>(PATH_PRODUCT_JSON);
-
     switch (input.trim()) {
       case 'crawl':
         logging.info(LOGGING_APP_PREFIX, 'Starting crawl...');
@@ -39,20 +44,7 @@ function startReadline(): void {
       case 'image':
         logging.info(LOGGING_APP_PREFIX, 'Starting upload image...');
 
-        // TODO: create function upload property images
-
-        // for (const product of jsonProducts) {
-        //   logging.info(LOGGING_APP_PREFIX, `[${product.name}]`);
-
-        //   for (const sku of product.skus) {
-        //     if (sku.images) {
-        //       sku.images = await uploadImages(sku.images);
-        //     }
-        //   }
-        //   logging.info(LOGGING_APP_PREFIX, `[${product.name}] Uploaded images`);
-        // }
-
-        // saveDataToJsonFile(PATH_PRODUCT_JSON, dataJSON);
+        await uploadSkuImages();
 
         break;
       case 'mongo':
@@ -82,10 +74,10 @@ function startReadline(): void {
         break;
       case 'help':
         console.log('\nUsage: ');
-        console.log('crawl  - Start crawling data');
-        console.log('image  - Start uploading images');
-        console.log('mongo   - Start upload data to mongodb');
-        console.log('help   - Show help');
+        console.log('crawl         - Start crawling data');
+        console.log('image         - Start uploading images');
+        console.log('mongo         - Start upload data to mongodb');
+        console.log('help          - Show help');
         console.log('exit or other - Exit the application\n');
         break;
       case 'exit':
@@ -97,4 +89,19 @@ function startReadline(): void {
 
     logging.info(LOGGING_APP_PREFIX, 'Listening input...');
   });
+}
+
+async function uploadSkuImages() {
+  const skuJSON = readDataFromJsonFile<SkuJSON>(PATH_SKU_JSON) || {};
+
+  for (const skus of Object.values(skuJSON)) {
+    for (const sku of skus) {
+      sku.images = await uploadImages(sku.images);
+      sku.stock = randomInt(MIN_STOCK, MAX_STOCK + 1);
+    }
+  }
+
+  saveDataToJsonFile(PATH_SKU_JSON, skuJSON);
+
+  logging.info(LOGGING_APP_PREFIX, 'Update sku data successfully');
 }

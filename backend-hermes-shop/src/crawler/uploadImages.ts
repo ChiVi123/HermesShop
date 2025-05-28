@@ -3,10 +3,10 @@ import { createImage } from '~/helpers/createImage';
 import type { Image } from '~/models/imageModel';
 import { cloudinaryProvider } from '~/providers/cloudinaryProvider';
 import { LOGGING_PREFIX, PATH_IMAGE_JSON } from './constants';
-import type { ImageMap } from './types';
+import type { ImageJSON } from './types';
 import { readDataFromJsonFile, saveDataToJsonFile } from './utils';
 
-const IMAGE_CACHED: ImageMap = readDataFromJsonFile<ImageMap>(PATH_IMAGE_JSON) || {};
+const IMAGE_CACHED: ImageJSON = readDataFromJsonFile<ImageJSON>(PATH_IMAGE_JSON) || {};
 
 export async function uploadImages(value: string[] | Image[]): Promise<Image[]> {
   const imagePromises = value.map(async (image) => {
@@ -24,6 +24,8 @@ export async function uploadImages(value: string[] | Image[]): Promise<Image[]> 
     const imageRes = await cloudinaryProvider.fileNameUpload(imageUrl, env.CLOUDINARY_FOLDER_NAME + 'products');
     const imageData = createImage(imageRes);
     IMAGE_CACHED[image] = imageData;
+
+    logging.info(LOGGING_PREFIX, 'Image upload to cloud', imageData.publicId);
 
     return imageData;
   });

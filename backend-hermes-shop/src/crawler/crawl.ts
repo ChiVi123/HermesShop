@@ -9,10 +9,7 @@ import {
   SKU_SELECTOR,
 } from './constants';
 import type { Product, ProductInfoJSON, Sku, SkuJSON } from './types';
-import { generateUniqueId, randomInt, readDataFromJsonFile, saveDataToJsonFile, urlValidation } from './utils';
-
-const MIN_STOCK = 10;
-const MAX_STOCK = 20;
+import { generateUniqueId, readDataFromJsonFile, saveDataToJsonFile, urlValidation } from './utils';
 
 const PRODUCT_CACHED = readDataFromJsonFile<ProductInfoJSON>(PATH_PRODUCT_JSON) || {};
 const SKU_CACHED = readDataFromJsonFile<SkuJSON>(PATH_SKU_JSON) || {};
@@ -91,9 +88,6 @@ async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<void
     }
 
     const skus = await crawlProductSkuRaw(productId, page);
-    skus.forEach((sku) => {
-      sku.stock = randomInt(MIN_STOCK, MAX_STOCK + 1);
-    });
 
     // Save to JSON
     SKU_CACHED[href] = skus;

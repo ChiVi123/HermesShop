@@ -18,7 +18,7 @@ const PRODUCT_CACHED: ProductJSON['products'] = readDataFromJsonFile<ProductJSON
 export async function uploadDataCrawled(): Promise<void> {
   let productSavedCounter = 0;
 
-  for (const { category, skus, ...data } of PRODUCT_CACHED) {
+  for (const { category, ...data } of PRODUCT_CACHED) {
     const categoryCreated = await createCategory(category);
     if (!categoryCreated) {
       logging.danger('(uploadDataCrawled) category not found', categoryCreated);
