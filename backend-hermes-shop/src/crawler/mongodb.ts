@@ -6,14 +6,14 @@ import { CategoryModelRepository } from '~/repositories/implements/CategoryModel
 import { ProductModelRepository } from '~/repositories/implements/ProductModelRepository';
 import { SkuModelRepository } from '~/repositories/implements/SkuModelRepository';
 import { PATH_PRODUCT_JSON, PATH_SKU_JSON } from './constants';
-import type { Product, ProductInfoJSON, Sku, SkuJSON } from './types';
+import type { Product, ProductJSON, Sku, SkuJSON } from './types';
 import { readDataFromJsonFile } from './utils';
 
 const categoryRepository = new CategoryModelRepository();
 const productRepository = new ProductModelRepository();
 const skuRepository = new SkuModelRepository();
 
-const PRODUCT_JSON = readDataFromJsonFile<ProductInfoJSON>(PATH_PRODUCT_JSON);
+const PRODUCT_JSON = readDataFromJsonFile<ProductJSON>(PATH_PRODUCT_JSON);
 const SKU_JSON = readDataFromJsonFile<SkuJSON>(PATH_SKU_JSON);
 
 export async function uploadDataCrawled(): Promise<void> {

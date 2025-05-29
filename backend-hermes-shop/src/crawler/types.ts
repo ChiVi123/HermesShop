@@ -26,5 +26,5 @@ export type Sku = {
   }[];
 };
 export type ImageJSON = Record<string, Image>;
-export type ProductInfoJSON = Record<string, Product>;
+export type ProductJSON = Record<string, Product>;
 export type SkuJSON = Record<string, Sku[]>;

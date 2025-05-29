@@ -8,10 +8,10 @@ import {
   PRODUCT_DETAIL_SELECTOR,
   SKU_SELECTOR,
 } from './constants';
-import type { Product, ProductInfoJSON, Sku, SkuJSON } from './types';
+import type { Product, ProductJSON, Sku, SkuJSON } from './types';
 import { generateUniqueId, readDataFromJsonFile, saveDataToJsonFile, urlValidation } from './utils';
 
-const PRODUCT_CACHED = readDataFromJsonFile<ProductInfoJSON>(PATH_PRODUCT_JSON) || {};
+const PRODUCT_CACHED = readDataFromJsonFile<ProductJSON>(PATH_PRODUCT_JSON) || {};
 const SKU_CACHED = readDataFromJsonFile<SkuJSON>(PATH_SKU_JSON) || {};
 
 export async function crawlCollection(url: string) {
