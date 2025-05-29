@@ -1,4 +1,5 @@
 import { StarHalfIcon, StarIcon } from 'lucide-react';
+import { Metadata } from 'next';
 import Link from 'next/link';
 import ProductPrice from '~/components/ProductPrice';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '~/components/ui/accordion';
@@ -11,6 +12,21 @@ import {
 } from '~/components/ui/breadcrumb';
 import { Button } from '~/components/ui/button';
 import ProductImageSelect from './components/ProductImageSelect';
+
+type Props = {
+  params: Promise<{ slugify: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slugify } = await params;
+  const serverApi = process.env.SERVER_API ? process.env.SERVER_API + `/v1/products/${slugify}` : '/api';
+  const result = await fetch(serverApi).then((data) => data.json());
+
+  return {
+    title: result.name,
+    description: result.shortDescription,
+  };
+}
 
 export default async function ProductDetailsPage({ params }: { params: Promise<{ slugify: string }> }) {
   const { slugify } = await params;
