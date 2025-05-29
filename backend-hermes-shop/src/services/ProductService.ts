@@ -28,7 +28,6 @@ export class ProductService {
   public async getDetail(slugify: string) {
     const product = await this.productRepository.getDetailsBySlugify(slugify);
     if (!product) throw new NextError(StatusCodes.NOT_FOUND, 'Product not found!');
-    product.category = product.category[0];
     return product;
   }
 
