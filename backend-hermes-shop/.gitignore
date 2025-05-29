@@ -3,3 +3,4 @@
 .env
 
 /src/crawler/crawl-*.json
+/src/hotfix

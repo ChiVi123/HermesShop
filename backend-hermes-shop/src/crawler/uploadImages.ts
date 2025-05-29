@@ -1,6 +1,6 @@
 import env from '~/configs/environment';
 import { createImage } from '~/helpers/createImage';
-import type { Image } from '~/models/imageModel';
+import type { ImageModel } from '~/models/imageModel';
 import { cloudinaryProvider } from '~/providers/cloudinaryProvider';
 import { LOGGING_PREFIX, PATH_IMAGE_JSON } from './constants';
 import type { ImageJSON } from './types';
@@ -8,7 +8,7 @@ import { readDataFromJsonFile, saveDataToJsonFile } from './utils';
 
 const IMAGE_CACHED: ImageJSON = readDataFromJsonFile<ImageJSON>(PATH_IMAGE_JSON) || {};
 
-export async function uploadImages(value: string[] | Image[]): Promise<Image[]> {
+export async function uploadImages(value: string[] | ImageModel[]): Promise<ImageModel[]> {
   const imagePromises = value.map(async (image) => {
     if (typeof image !== 'string') {
       logging.info(LOGGING_PREFIX, 'Image already exist', image.publicId);

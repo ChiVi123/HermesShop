@@ -3,7 +3,6 @@ import slug from 'slug';
 import { StatusCodes } from '~/configs/statusCodes';
 import NextError from '~/helpers/nextError';
 import type { ProductReqBody } from '~/models/productModel';
-import { cloudinaryProvider } from '~/providers/cloudinaryProvider';
 import { CategoryModelRepository } from '~/repositories/implements/CategoryModelRepository';
 import { ProductModelRepository } from '~/repositories/implements/ProductModelRepository';
 import { SkuModelRepository } from '~/repositories/implements/SkuModelRepository';
@@ -50,15 +49,13 @@ export class ProductService {
     const deletedProduct = await this.productRepository.destroyById(id);
     if (!deletedProduct) throw new NextError(StatusCodes.NOT_FOUND, 'Product not found!');
 
-    const deletedSkuPromises = deletedProduct.skuIds.map((skuId) => this.skuRepository.destroyById(skuId));
-    const deleteSkus = await Promise.all(deletedSkuPromises);
-
-    for (const sku of deleteSkus) {
-      if (sku && sku?.images) {
-        const publicIds = sku.images.map((item) => item.publicId);
-        await cloudinaryProvider.deleteAssetArray(publicIds);
-      }
-    }
+    // TODO: delete all skus relate and all images
+    // for (const sku of deleteSkus) {
+    //   if (sku && sku?.images) {
+    //     const publicIds = sku.images.map((item) => item.publicId);
+    //     await cloudinaryProvider.deleteAssetArray(publicIds);
+    //   }
+    // }
 
     return { deleteResult: 'Product and its Skus deleted successfully!' };
   }
