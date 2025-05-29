@@ -1,7 +1,7 @@
-import { type WithId } from 'mongodb';
+import type { InsertManyResult, WithId } from 'mongodb';
 import slug from 'slug';
 import type { CategoryModel } from '~/models/categoryModel';
-import type { ProductModel } from '~/models/productModel';
+import type { ProductModel, SkuModel } from '~/models/productModel';
 import { CategoryModelRepository } from '~/repositories/implements/CategoryModelRepository';
 import { ProductModelRepository } from '~/repositories/implements/ProductModelRepository';
 import { SkuModelRepository } from '~/repositories/implements/SkuModelRepository';
@@ -39,14 +39,10 @@ export async function uploadDataCrawled(): Promise<void> {
       continue;
     }
 
-    const productResult = await createManySkus(productCreated._id.toString(), skus);
-    if (!productResult) {
-      logging.danger('(uploadDataCrawled) product not found', productResult);
-      continue;
-    }
+    const skuResult = await createManySkus(productCreated._id.toString(), skus);
 
     productSavedCounter++;
-    logging.info('Uploaded', productResult.name, 'sku counter:', productResult.skuIds.length);
+    logging.info('Sku saved:', `(${productCreated.name}):${skuResult.insertedCount}`);
   }
 
   logging.info('Product saved is', `${productSavedCounter}/${productJSON.length}`);
@@ -82,15 +78,13 @@ async function createProduct(
   return productRepository.findOneById(insertedOneResult.insertedId);
 }
 
-async function createManySkus(productId: string, skus: Sku[]): Promise<WithId<ProductModel> | null> {
-  const insertManyResult = await skuRepository.createMany(
+async function createManySkus(productId: string, skus: Sku[]): Promise<InsertManyResult<SkuModel>> {
+  return skuRepository.createMany(
     skus.map((sku) => ({
       ...sku,
       productId,
     })),
   );
-
-  return productRepository.pushSkuIds(productId, Object.values(insertManyResult.insertedIds));
 }
 
 function getAllSkuBySkuIdList(skuIds: string[], skuJSON: SkuJSON): Sku[] {

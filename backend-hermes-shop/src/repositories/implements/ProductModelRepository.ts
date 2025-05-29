@@ -41,7 +41,6 @@ const SCHEMA = baseSchema.keys({
       }),
     )
     .default([]),
-  skuIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
   _status: Joi.string()
     .valid(...Object.values(STATUS_PRODUCT_KEYS))
     .default(STATUS_PRODUCT_KEYS.RAW),
@@ -131,6 +130,8 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
             category: {
               $arrayElemAt: ['$category', 0],
             },
+            options: 1,
+            rating: 1,
           },
         },
       ])
@@ -147,22 +148,6 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
       throw new NextError(StatusCodes.UNPROCESSABLE_ENTITY, error);
     }
     return this.collection.insertOne({ ...validatedData, categoryId: new ObjectId(validatedData.categoryId) });
-  }
-
-  public async pushSkuIds(productId: ModelId, skuIds: ObjectId[]): Promise<WithId<ProductModel> | null> {
-    return this.collection.findOneAndUpdate(
-      { _id: new ObjectId(productId) },
-      { $push: { skuIds: { $each: skuIds } } },
-      { returnDocument: 'after' },
-    );
-  }
-
-  public async pullSkuIds(productId: ModelId, skuIds: ObjectId[]): Promise<WithId<ProductModel> | null> {
-    return this.collection.findOneAndUpdate(
-      { _id: new ObjectId(productId) },
-      { $pull: { skuIds: { $each: skuIds } } },
-      { returnDocument: 'after' },
-    );
   }
 
   public destroyById(productId: ModelId): Promise<WithId<ProductModel> | null> {

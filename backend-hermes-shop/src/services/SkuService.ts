@@ -20,15 +20,13 @@ export class SkuService {
   }
 
   public async createMany(productId: string, skus: ProductReqBody['skus']) {
-    const insertManyResult = await this.skuRepository.createMany(
+    return this.skuRepository.createMany(
       skus.map((sku) => ({
         ...sku,
         productId,
         slugify: slug(sku.name),
       })),
     );
-
-    return this.productRepository.pushSkuIds(productId, Object.values(insertManyResult.insertedIds));
   }
 
   public async update(id: string, data: Record<string, unknown>, files: MulterManyFile | undefined) {
