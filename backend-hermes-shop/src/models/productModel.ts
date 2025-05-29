@@ -1,7 +1,6 @@
 import type { WithId } from 'mongodb';
 import type { OPTION_TYPE_KEYS, STATUS_PRODUCT_KEYS } from '~/configs/keys';
-import type { Model, ModelId, ModelResponse } from '~/core/model/types';
-import type { ImageModel } from '~/models/imageModel';
+import type { Model, ModelId, ModelIds, ModelResponse } from '~/core/model/types';
 
 export interface ProductModel extends Model {
   name: string;
@@ -20,9 +19,9 @@ export interface SkuModel extends Model {
   slugify: string;
   price: number;
   discountPrice: number;
-  images: ImageModel[];
   specs: SkuSpec[];
   stock: number;
+  imageIds: ModelIds;
 }
 export interface ProductOption {
   key: string;

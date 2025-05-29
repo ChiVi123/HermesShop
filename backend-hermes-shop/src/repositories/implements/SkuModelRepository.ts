@@ -8,7 +8,6 @@ import type { ModelId } from '~/core/model/types';
 import { RepositoryMongoDB } from '~/core/repository/RepositoryMongoDB';
 import getBaseValidSchema from '~/helpers/getBaseValidSchema';
 import NextError from '~/helpers/nextError';
-import type { ImageModel } from '~/models/imageModel';
 import type { SkuModel, SkuModelProperties, SkuSpec } from '~/models/productModel';
 import type { SkuRepository } from '~/repositories/skuRepository';
 
@@ -28,16 +27,7 @@ const SCHEMA = baseSkuSchema.keys({
       }),
     )
     .default([]),
-  images: Joi.array().items(
-    Joi.object<ImageModel>({
-      bytes: Joi.number(),
-      createdAt: Joi.number(),
-      height: Joi.number(),
-      publicId: Joi.string(),
-      url: Joi.string(),
-      width: Joi.number(),
-    }),
-  ),
+  imageIds: Joi.array().items(Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)).default([]),
   stock: Joi.number(),
 });
 const INVALID_FIELDS: SkuModelProperties[] = ['_id', 'createdAt'];
