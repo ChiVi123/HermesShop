@@ -1,5 +1,6 @@
 import { StarHalfIcon, StarIcon } from 'lucide-react';
 import Link from 'next/link';
+import ProductPrice from '~/components/ProductPrice';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '~/components/ui/accordion';
 import {
   Breadcrumb,
@@ -47,10 +48,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
             <h1 className='text-3xl font-extrabold'>{result?.name}</h1>
             <p>{result?.shortDescription}</p>
 
-            <div className='flex gap-2'>
-              <span className='text-lg text-red-800'>${sku.discountPrice}</span>
-              <span className='text-lg text-muted-foreground line-through'>${sku.price}</span>
-            </div>
+            <ProductPrice price={sku.price} discountPrice={sku.discountPrice} />
 
             <div className='relative flex gap-4'>
               <div className='flex gap-1'>
