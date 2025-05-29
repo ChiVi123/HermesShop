@@ -5,21 +5,25 @@ import type { ProductModel } from '~/models/productModel';
 import { CategoryModelRepository } from '~/repositories/implements/CategoryModelRepository';
 import { ProductModelRepository } from '~/repositories/implements/ProductModelRepository';
 import { SkuModelRepository } from '~/repositories/implements/SkuModelRepository';
-import { PATH_PRODUCT_JSON } from './constants';
-import type { Product, ProductJSON, Sku } from './types';
+import { PATH_PRODUCT_JSON, PATH_SKU_JSON } from './constants';
+import type { Product, ProductInfoJSON, Sku, SkuJSON } from './types';
 import { readDataFromJsonFile } from './utils';
 
 const categoryRepository = new CategoryModelRepository();
 const productRepository = new ProductModelRepository();
 const skuRepository = new SkuModelRepository();
 
-const PRODUCT_CACHED: ProductJSON['products'] = readDataFromJsonFile<ProductJSON>(PATH_PRODUCT_JSON).products ?? [];
+const PRODUCT_JSON = readDataFromJsonFile<ProductInfoJSON>(PATH_PRODUCT_JSON);
+const SKU_JSON = readDataFromJsonFile<SkuJSON>(PATH_SKU_JSON);
 
 export async function uploadDataCrawled(): Promise<void> {
   let productSavedCounter = 0;
+  const productJSON = Object.values(PRODUCT_JSON);
 
-  for (const { category, ...data } of PRODUCT_CACHED) {
+  for (const { category, skuIds, ...data } of productJSON) {
+    const skus = getAllSkuBySkuIdList(skuIds, SKU_JSON);
     const categoryCreated = await createCategory(category);
+
     if (!categoryCreated) {
       logging.danger('(uploadDataCrawled) category not found', categoryCreated);
       continue;
@@ -45,7 +49,7 @@ export async function uploadDataCrawled(): Promise<void> {
     logging.info('Uploaded', productResult.name, 'sku counter:', productResult.skuIds.length);
   }
 
-  logging.info('Product saved is', `${productSavedCounter}/${PRODUCT_CACHED.length}`);
+  logging.info('Product saved is', `${productSavedCounter}/${productJSON.length}`);
 }
 
 // Methods
@@ -61,7 +65,7 @@ async function createCategory(name: string): Promise<WithId<CategoryModel> | nul
 }
 
 async function createProduct(
-  data: Omit<Product, 'category' | 'skus'>,
+  data: Omit<Product, 'category' | 'skuIds'>,
   category: WithId<CategoryModel>,
 ): Promise<WithId<ProductModel> | undefined | null> {
   const existProduct = await productRepository.findOneByName(data.name);
@@ -87,4 +91,8 @@ async function createManySkus(productId: string, skus: Sku[]): Promise<WithId<Pr
   );
 
   return productRepository.pushSkuIds(productId, Object.values(insertManyResult.insertedIds));
+}
+
+function getAllSkuBySkuIdList(skuIds: string[], skuJSON: SkuJSON): Sku[] {
+  return skuIds.map((id) => skuJSON[id]).flat();
 }

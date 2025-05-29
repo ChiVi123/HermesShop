@@ -8,7 +8,7 @@ import type { ModelId } from '~/core/model/types';
 import { RepositoryMongoDB } from '~/core/repository/RepositoryMongoDB';
 import getBaseValidSchema from '~/helpers/getBaseValidSchema';
 import NextError from '~/helpers/nextError';
-import type { ProductModel, ProductModelProperties, ProductOption, ProductSpec } from '~/models/productModel';
+import type { ProductAttr, ProductModel, ProductModelProperties, ProductOption } from '~/models/productModel';
 import type { ProductRepository } from '~/repositories/productRepository';
 
 const baseSchema = getBaseValidSchema<ProductModel>();
@@ -23,9 +23,9 @@ const SCHEMA = baseSchema.keys({
     .valid(...Object.values(GENDER_KEYS))
     .default(GENDER_KEYS.MEN),
   rating: Joi.number().positive().default(0),
-  specs: Joi.array()
+  attrs: Joi.array()
     .items(
-      Joi.object<ProductSpec>({
+      Joi.object<ProductAttr>({
         key: Joi.string().required().trim().strict(),
         value: Joi.string().required().trim().strict(),
       }),

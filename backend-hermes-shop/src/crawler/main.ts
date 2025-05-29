@@ -10,6 +10,7 @@ import slug from 'slug';
 import { closeDB, connectDB } from '~/core/mongodb';
 import { PATH_SKU_JSON } from './constants';
 import { crawlCollection } from './crawl';
+import { uploadDataCrawled } from './mongodb';
 import type { SkuJSON } from './types';
 import { uploadImages } from './uploadImages';
 import { randomInt, readDataFromJsonFile, saveDataToJsonFile } from './utils';
@@ -55,8 +56,7 @@ function startReadline(): void {
             logging.info(LOGGING_APP_PREFIX, 'Mongodb connected');
           })
           .then(async () => {
-            // TODO: refactor uploadDataCrawled
-            // await uploadDataCrawled();
+            await uploadDataCrawled();
 
             AsyncExitHook(() => {
               logging.info(LOGGING_APP_PREFIX, 'Exit');
