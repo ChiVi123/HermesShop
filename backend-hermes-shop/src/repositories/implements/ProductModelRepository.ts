@@ -119,6 +119,20 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
             as: 'category',
           },
         },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            shortDescription: 1,
+            attrs: 1,
+            slugify: 1,
+            gender: 1,
+            skus: 1,
+            category: {
+              $arrayElemAt: ['$category', 0],
+            },
+          },
+        },
       ])
       .toArray();
 
