@@ -1,5 +1,7 @@
 import { StarHalfIcon, StarIcon } from 'lucide-react';
+import { Metadata } from 'next';
 import Link from 'next/link';
+import ProductPrice from '~/components/ProductPrice';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '~/components/ui/accordion';
 import {
   Breadcrumb,
@@ -11,12 +13,27 @@ import {
 import { Button } from '~/components/ui/button';
 import ProductImageSelect from './components/ProductImageSelect';
 
+type Props = {
+  params: Promise<{ slugify: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slugify } = await params;
+  const serverApi = process.env.SERVER_API ? process.env.SERVER_API + `/v1/products/${slugify}` : '/api';
+  const result = await fetch(serverApi).then((data) => data.json());
+
+  return {
+    title: result.name,
+    description: result.shortDescription,
+  };
+}
+
 export default async function ProductDetailsPage({ params }: { params: Promise<{ slugify: string }> }) {
   const { slugify } = await params;
   const serverApi = process.env.SERVER_API ? process.env.SERVER_API + `/v1/products/${slugify}` : '/api';
   const result = await fetch(serverApi).then((data) => data.json());
 
-  const sku = result.skus[0];
+  const sku = result?.skus[0];
 
   return (
     <>
@@ -36,7 +53,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
 
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link href={`/c/${result.category.slugify}`}>{result.category.name} </Link>
+                  <Link href={`/c/${result?.category.slugify}`}>{result?.category.name} </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
             </BreadcrumbList>
@@ -44,13 +61,10 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
 
           {/* Basic */}
           <div className='mb-8 space-y-2'>
-            <h1 className='text-3xl font-extrabold'>{result.name}</h1>
-            <p>{result.shortDescription}</p>
+            <h1 className='text-3xl font-extrabold'>{result?.name}</h1>
+            <p>{result?.shortDescription}</p>
 
-            <div className='flex gap-2'>
-              <span className='text-lg text-red-800'>${sku.discountPrice}</span>
-              <span className='text-lg text-muted-foreground line-through'>${sku.price}</span>
-            </div>
+            <ProductPrice price={sku.price} discountPrice={sku.discountPrice} />
 
             <div className='relative flex gap-4'>
               <div className='flex gap-1'>
@@ -72,7 +86,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
                 <StarHalfIcon fill='currentColor' strokeWidth={0} size={16} className='text-accent-foreground' />
               </div>
 
-              <span className='leading-none'>({result.rating})</span>
+              <span className='leading-none'>({result?.rating})</span>
             </div>
           </div>
 
@@ -88,7 +102,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
 
       <section className='px-10 mt-12'>
         <Accordion type='single' collapsible className='w-full'>
-          {result.specs.map(({ key, value }) => (
+          {result?.attrs.map(({ key, value }) => (
             <AccordionItem key={key} value={key}>
               <AccordionTrigger className='text-xl font-bold'>{key}</AccordionTrigger>
               <AccordionContent>

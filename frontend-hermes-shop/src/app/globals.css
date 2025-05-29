@@ -164,31 +164,30 @@
     @apply font-bold underline;
   }
 
-  .text-editor-display h2 {
+  .text-editor-display h2#size-chart-heading {
     @apply mb-3 font-bold uppercase tracking-widest;
   }
-
-  .text-editor-display h2 + div {
+  .text-editor-display [data-testid='size-chart-table'] {
     @apply mb-6;
   }
 
-  .text-editor-display h2 + div > div > div {
+  .text-editor-display [data-testid='size-chart-table'] > div {
     @apply min-w-full overflow-x-auto;
   }
 
-  .text-editor-display h2 + div > div > div > div {
+  .text-editor-display [data-testid='size-chart-table'] [role='row'] {
     @apply flex w-max;
   }
 
-  .text-editor-display h2 + div > div > div > div > div:first-of-type {
-    @apply w-44;
+  .text-editor-display [data-testid='size-chart-table'] [role='row'] > div:first-of-type {
+    @apply sticky left-0 w-44 shadow-2xl z-10;
   }
 
-  .text-editor-display h2 + div > div > div > div > div {
+  .text-editor-display [data-testid='size-chart-table'] [role='row'] > div {
     @apply flex items-center justify-center w-28 p-4 border-r border-b border-border;
   }
 
-  .text-editor-display h2 + div > div > div > div > div:nth-child(odd) {
+  .text-editor-display [data-testid='size-chart-table'] [role='row'] > div:nth-child(odd) {
     @apply bg-accent;
   }
 }
