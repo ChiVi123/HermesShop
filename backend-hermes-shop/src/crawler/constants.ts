@@ -5,7 +5,7 @@ export enum PRODUCT_DETAIL_SELECTOR {
   CATEGORY = 'div.PdpBreadcrumbs__trail a',
   IMAGE = 'div.PdpImageGallery__image img',
   PRICE = '.PdpPrice__price',
-  SPECIFICATION = '.PdpAttributes > div',
+  SPECIFICATION = '.PdpAttributes:not(.mt-0) > div',
   SPECIFICATION_KEY = 'button.Dropdown__header',
   SPECIFICATION_VALUE = 'div.Dropdown__accordion > .Accordion > .hiddenChildren > div',
 }
@@ -26,4 +26,5 @@ export enum SKU_SELECTOR {
 }
 export const LOGGING_PREFIX = '[Crawl]';
 export const PATH_PRODUCT_JSON = './src/crawler/crawl-product.json';
+export const PATH_SKU_JSON = './src/crawler/crawl-sku.json';
 export const PATH_IMAGE_JSON = './src/crawler/crawl-image.json';

@@ -4,20 +4,17 @@ import {
   COLLECTION_PRODUCT_SELECTOR,
   LOGGING_PREFIX,
   PATH_PRODUCT_JSON,
+  PATH_SKU_JSON,
   PRODUCT_DETAIL_SELECTOR,
   SKU_SELECTOR,
 } from './constants';
-import type { Product, ProductJSON, Sku } from './types';
-import { randomInt, readDataFromJsonFile, urlValidation } from './utils';
+import type { Product, ProductJSON, Sku, SkuJSON } from './types';
+import { generateUniqueId, readDataFromJsonFile, saveDataToJsonFile, urlValidation } from './utils';
 
-const MIN_STOCK = 10;
-const MAX_STOCK = 20;
+const PRODUCT_CACHED = readDataFromJsonFile<ProductJSON>(PATH_PRODUCT_JSON) || {};
+const SKU_CACHED = readDataFromJsonFile<SkuJSON>(PATH_SKU_JSON) || {};
 
-const URL_CACHED_FROM_FILE: ProductJSON['urlCached'] =
-  readDataFromJsonFile<ProductJSON>(PATH_PRODUCT_JSON).urlCached || {};
-const URL_CACHED: ProductJSON['urlCached'] = {};
-
-export async function crawlCollection(url: string): Promise<ProductJSON | undefined> {
+export async function crawlCollection(url: string) {
   if (!urlValidation(url)) return;
 
   logging.info(LOGGING_PREFIX, 'Website url:', url);
@@ -42,20 +39,17 @@ export async function crawlCollection(url: string): Promise<ProductJSON | undefi
       COLLECTION_PRODUCT_SELECTOR,
     );
 
-    const products = [];
     const maxProductLength = productLinkList.length;
-    let currentProcess = 0;
+    let productCount = 0;
+
+    logging.info(LOGGING_PREFIX, 'Product total:', maxProductLength);
 
     for (const productVariantLinks of productLinkList) {
       const product = await crawlWebsiteProduct(productVariantLinks, page);
       if (product) {
-        products.push(product);
-        currentProcess++;
-        logging.info(LOGGING_PREFIX, `[PRODUCTS] ${currentProcess}/${maxProductLength}`);
+        logging.info(LOGGING_PREFIX, `created ${product.name}`, '| process:', ++productCount);
       }
     }
-
-    return { products, urlCached: URL_CACHED };
   } catch (error) {
     logging.danger(LOGGING_PREFIX, 'Error crawling website:', error);
   } finally {
@@ -74,7 +68,7 @@ async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Prod
   }
 
   const hrefLength = hrefList.length;
-  let product = null;
+  let productId: string | null = null;
   let currentProcess = 0;
 
   for (const href of hrefList) {
@@ -83,47 +77,73 @@ async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Prod
       continue;
     }
     const url = new URL(href);
-    if (URL_CACHED_FROM_FILE[href]) {
-      logging.info(LOGGING_PREFIX, `[Already URL]: ${url.pathname}`);
+    const skuCached = SKU_CACHED[href];
+    if (SKU_CACHED[href]) {
+      productId = skuCached[0].productId ?? null;
+      logging.info(LOGGING_PREFIX, `[Already sku]: ${url.pathname}`);
       continue;
     }
 
-    URL_CACHED[href] = true;
+    logging.info(LOGGING_PREFIX, url.pathname);
     await page.goto(href);
 
-    logging.info(LOGGING_PREFIX, 'Product ...', url.pathname);
-
-    if (product === null) {
-      product = await crawlProductRaw(page);
-    } else {
-      const skus = await crawlProductSkuRaw(page);
-      product.skus.push(...skus);
-      product.skus.forEach((sku) => {
-        sku.stock = randomInt(MIN_STOCK, MAX_STOCK + 1);
-      });
+    if (productId === null) {
+      productId = generateUniqueId();
     }
+
+    const skus = await crawlProductSkuRaw(productId, page);
+
+    // Save to JSON
+    SKU_CACHED[href] = skus;
+    saveDataToJsonFile(PATH_SKU_JSON, SKU_CACHED);
+
     currentProcess++;
 
-    logging.info(LOGGING_PREFIX, `[${product.name}] ${currentProcess}/${hrefLength}`);
+    logging.info(LOGGING_PREFIX, `[${productId}] ${currentProcess}/${hrefLength}`);
   }
 
-  if (product === null) {
-    logging.info(LOGGING_PREFIX, 'No product found');
+  if (productId === null) {
+    logging.danger(LOGGING_PREFIX, 'something went wrong', hrefList);
     return;
   }
 
+  let product = PRODUCT_CACHED[productId];
+  if (product) {
+    logging.info(LOGGING_PREFIX, 'Product [name]:', product.name, '[id]:', productId, '(cached)');
+    return;
+  }
+
+  const [href] = hrefList;
+  if (href === undefined) {
+    logging.info(LOGGING_PREFIX, 'Href list is empty');
+    return;
+  }
+
+  await page.goto(href);
+  product = await crawlProductRaw(page);
+  product.skuIds = hrefList;
+
+  // Save to JSON
+  PRODUCT_CACHED[productId] = product;
+  saveDataToJsonFile(PATH_PRODUCT_JSON, PRODUCT_CACHED);
+
   return product;
 }
+
 async function crawlProductRaw(page: Page): Promise<Product> {
-  const product = await page.$eval(
+  return page.$eval(
     PRODUCT_DETAIL_SELECTOR.ROOT,
     (root, selector) => {
       const [, , category] = root.querySelectorAll(selector.CATEGORY);
+      const REGEX_REMOVE_ATTRIBUTE_CLASS = /\s*class="[^"]*"/g;
+      const REGEX_REMOVE_SCROLL_ELEMENT =
+        /<div[^>]*data-testid="size-chart-scrollbar"[^>]*role="scrollbar"[^>]*>[\s\S]*?<\/div><\/div>/g;
 
       return {
         category: category?.textContent?.trim() ?? 'Sandals',
         name: root.querySelector(selector.NAME)?.textContent?.trim() ?? '',
         shortDescription: root.querySelector(selector.SHORT_DESCRIPTION)?.textContent?.trim() ?? '',
+        skuIds: [],
         options: [
           {
             key: 'color',
@@ -134,27 +154,25 @@ async function crawlProductRaw(page: Page): Promise<Product> {
             type: 'select',
           },
         ],
-        specs: Array.from(root.querySelectorAll(selector.SPECIFICATION)).map((el) => ({
+        attrs: Array.from(root.querySelectorAll(selector.SPECIFICATION)).map((el) => ({
           key: el.querySelector(selector.SPECIFICATION_KEY)?.textContent?.trim() ?? '',
           value:
             el
               .querySelector(selector.SPECIFICATION_VALUE)
               ?.innerHTML.trim()
-              .replace(/ (class|id|role|data-testid|aria-labelledby|tabindex)="[^"]*"/g, '') ?? '',
+              .replace(REGEX_REMOVE_ATTRIBUTE_CLASS, '')
+              .replace(REGEX_REMOVE_SCROLL_ELEMENT, '') ?? '',
         })),
       };
     },
     PRODUCT_DETAIL_SELECTOR,
   );
-  const skus = await crawlProductSkuRaw(page);
-
-  return { ...product, skus };
 }
 
-async function crawlProductSkuRaw(page: Page): Promise<Sku[]> {
+async function crawlProductSkuRaw(productId: string, page: Page): Promise<Sku[]> {
   return page.$eval(
     SKU_SELECTOR.ROOT,
-    (root, selector) => {
+    (root, selector, id) => {
       const leftSideEl = root.querySelector(selector.LEFT_SIDE)!;
       const asideEl = root.querySelector(selector.ASIDE)!;
 
@@ -181,6 +199,7 @@ async function crawlProductSkuRaw(page: Page): Promise<Sku[]> {
       }
 
       return productSizes.map((size) => ({
+        productId: id,
         price,
         discountPrice,
         stock: 1,
@@ -198,5 +217,6 @@ async function crawlProductSkuRaw(page: Page): Promise<Sku[]> {
       }));
     },
     SKU_SELECTOR,
+    productId,
   );
 }

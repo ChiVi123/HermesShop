@@ -8,40 +8,25 @@ import AsyncExitHook from 'async-exit-hook';
 import readline from 'readline';
 import slug from 'slug';
 import { closeDB, connectDB } from '~/core/mongodb';
-import { PATH_PRODUCT_JSON } from './constants';
+import { PATH_SKU_JSON } from './constants';
 import { crawlCollection } from './crawl';
 import { uploadDataCrawled } from './mongodb';
-import { type ProductJSON } from './types';
+import type { SkuJSON } from './types';
 import { uploadImages } from './uploadImages';
-import { readDataFromJsonFile, saveDataToJsonFile } from './utils';
+import { randomInt, readDataFromJsonFile, saveDataToJsonFile } from './utils';
 
 const LOGGING_APP_PREFIX = '[App]';
 const LOGGING_APP_ERROR_PREFIX = '[App Error]';
 
+const MIN_STOCK = 10;
+const MAX_STOCK = 20;
+
 // config slug charmap
 slug.charmap['/'] = '-';
 
-logging.info(LOGGING_APP_PREFIX, 'Mongodb connecting...');
+startReadline();
 
-connectDB()
-  .then(() => {
-    logging.info(LOGGING_APP_PREFIX, 'Mongodb connected');
-  })
-  .then(() => {
-    const readline = startReadline();
-
-    AsyncExitHook(() => {
-      logging.info(LOGGING_APP_PREFIX, 'Exit');
-      readline.close();
-      closeDB();
-    });
-  })
-  .catch((error) => {
-    logging.danger(LOGGING_APP_ERROR_PREFIX, error);
-    process.exit(0);
-  });
-
-function startReadline(): readline.Interface {
+function startReadline(): void {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -49,72 +34,74 @@ function startReadline(): readline.Interface {
 
   logging.info(LOGGING_APP_PREFIX, 'Listening input...');
   rl.on('line', async (input) => {
-    const dataJSON = readDataFromJsonFile<ProductJSON>(PATH_PRODUCT_JSON);
-    const jsonProducts = dataJSON.products || [];
-
     switch (input.trim()) {
       case 'crawl':
         logging.info(LOGGING_APP_PREFIX, 'Starting crawl...');
-        crawlData().catch((error) => logging.danger(LOGGING_APP_ERROR_PREFIX, error));
+        await crawlCollection(process.env.CRAWL_URL ?? '').catch((error) =>
+          logging.danger(LOGGING_APP_ERROR_PREFIX, error),
+        );
 
         break;
       case 'image':
         logging.info(LOGGING_APP_PREFIX, 'Starting upload image...');
 
-        for (const product of jsonProducts) {
-          logging.info(LOGGING_APP_PREFIX, `[${product.name}]`);
-
-          for (const sku of product.skus) {
-            if (sku.images) {
-              sku.images = await uploadImages(sku.images);
-            }
-          }
-          logging.info(LOGGING_APP_PREFIX, `[${product.name}] Uploaded images`);
-        }
-
-        saveDataToJsonFile(PATH_PRODUCT_JSON, dataJSON);
+        await uploadSkuImages();
 
         break;
       case 'mongo':
-        await uploadDataCrawled();
+        logging.info(LOGGING_APP_PREFIX, 'Mongodb connecting...');
+
+        connectDB()
+          .then(() => {
+            logging.info(LOGGING_APP_PREFIX, 'Mongodb connected');
+          })
+          .then(async () => {
+            await uploadDataCrawled();
+
+            AsyncExitHook(() => {
+              logging.info(LOGGING_APP_PREFIX, 'Exit');
+              rl.close();
+              closeDB();
+            });
+          })
+          .catch((error) => {
+            logging.danger(LOGGING_APP_ERROR_PREFIX, error);
+          })
+          .finally(() => {
+            process.exit(0);
+          });
 
         break;
       case 'help':
         console.log('\nUsage: ');
-        console.log('crawl  - Start crawling data');
-        console.log('image  - Start uploading images');
-        console.log('mongo   - Start upload data to mongodb');
-        console.log('help   - Show help');
+        console.log('crawl         - Start crawling data');
+        console.log('image         - Start uploading images');
+        console.log('mongo         - Start upload data to mongodb');
+        console.log('help          - Show help');
         console.log('exit or other - Exit the application\n');
         break;
       case 'exit':
       default:
+        logging.info(LOGGING_APP_PREFIX, 'Exit');
+        rl.close();
         process.exit(0);
     }
 
     logging.info(LOGGING_APP_PREFIX, 'Listening input...');
   });
-
-  return rl;
 }
 
-const crawlData = async () => {
-  const data = await crawlCollection(process.env.CRAWL_URL ?? '');
-  if (!data) {
-    logging.info(LOGGING_APP_PREFIX, 'No product collection created');
-    return;
-  }
-  const dataJSON = readDataFromJsonFile<ProductJSON>(PATH_PRODUCT_JSON);
+async function uploadSkuImages() {
+  const skuJSON = readDataFromJsonFile<SkuJSON>(PATH_SKU_JSON) || {};
 
-  data.products.forEach((product) => {
-    const existingProductIndex = dataJSON.products.findIndex((p) => p.name === product.name);
-    if (existingProductIndex !== -1) {
-      dataJSON.products[existingProductIndex] = product; // Update existing product
-    } else {
-      dataJSON.products.push(product); // Add new product
+  for (const skus of Object.values(skuJSON)) {
+    for (const sku of skus) {
+      sku.images = await uploadImages(sku.images);
+      sku.stock = randomInt(MIN_STOCK, MAX_STOCK + 1);
     }
-  });
-  Object.assign(dataJSON.urlCached, data.urlCached);
+  }
 
-  saveDataToJsonFile(PATH_PRODUCT_JSON, dataJSON);
-};
+  saveDataToJsonFile(PATH_SKU_JSON, skuJSON);
+
+  logging.info(LOGGING_APP_PREFIX, 'Update sku data successfully');
+}

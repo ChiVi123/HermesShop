@@ -14,3 +14,6 @@ export function readDataFromJsonFile<T>(filePath: string): T {
   const fileContent = fs.readFileSync(filePath, 'utf-8');
   return JSON.parse(fileContent) as T;
 }
+export function generateUniqueId(): string {
+  return Math.random().toString(36).substring(2, 9);
+}

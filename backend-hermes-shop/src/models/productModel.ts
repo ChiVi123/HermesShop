@@ -10,7 +10,7 @@ export interface ProductModel extends Model {
   categoryId: ModelId;
   rating: number;
   gender: string;
-  specs: ProductSpec[];
+  attrs: ProductAttr[];
   options: ProductOption[];
   skuIds: ModelIds;
   _status: STATUS_PRODUCT_KEYS;
@@ -29,7 +29,7 @@ export interface ProductOption {
   key: string;
   type: OPTION_TYPE_KEYS;
 }
-export interface ProductSpec {
+export interface ProductAttr {
   key: string;
   value: string;
 }
@@ -44,7 +44,7 @@ export type ProductReqBody = {
   name: string;
   shortDescription: string;
   categoryId: string;
-  attrs: ProductSpec[];
+  attrs: ProductAttr[];
   options: ProductOption[];
   skus: { name: string; price: number; discountPrice: number; specs: { key: string; value: string }[] }[];
 };

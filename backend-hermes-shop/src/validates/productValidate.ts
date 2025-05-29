@@ -1,10 +1,10 @@
 import Joi from 'joi';
 import { OPTION_TYPE_KEYS } from '~/configs/keys';
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/configs/validates';
-import type { ProductOption, ProductReqBody, ProductSpec } from '~/models/productModel';
+import type { ProductAttr, ProductOption, ProductReqBody } from '~/models/productModel';
 import { skuValidate } from '~/validates/skuValidate';
 
-const productAttrsSchema = Joi.object<ProductSpec>({
+const productAttrsSchema = Joi.object<ProductAttr>({
   key: Joi.string().required().trim().strict(),
   value: Joi.string().required().trim().strict(),
 });
