@@ -3,6 +3,7 @@ export enum COLLECTION_NAME_KEYS {
   SKUS = 'skus',
   USERS = 'users',
   CATEGORIES = 'categories',
+  IMAGES = 'images',
 }
 export enum GENDER_KEYS {
   MEN = 'men',

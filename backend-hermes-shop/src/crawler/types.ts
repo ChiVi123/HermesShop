@@ -1,4 +1,4 @@
-import type { Image } from '~/models/imageModel';
+import type { ImageModel } from '~/models/imageModel';
 
 export type Product = {
   category: string;
@@ -19,12 +19,12 @@ export type Sku = {
   price: number;
   discountPrice: number;
   stock: number;
-  images: string[] | Image[];
+  images: string[] | ImageModel[];
   specs: {
     key: string;
     value: string;
   }[];
 };
-export type ImageJSON = Record<string, Image>;
+export type ImageJSON = Record<string, ImageModel>;
 export type ProductJSON = Record<string, Product>;
 export type SkuJSON = Record<string, Sku[]>;

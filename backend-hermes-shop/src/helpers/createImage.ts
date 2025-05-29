@@ -1,7 +1,7 @@
 import type { UploadApiResponse } from 'cloudinary';
-import type { Image } from '~/models/imageModel';
+import type { ImageModel } from '~/models/imageModel';
 
-export function createImage(upload: UploadApiResponse): Image {
+export function createImage(upload: UploadApiResponse): ImageModel {
   const date = new Date(upload.created_at);
   return {
     publicId: upload.public_id,
@@ -10,5 +10,7 @@ export function createImage(upload: UploadApiResponse): Image {
     height: upload.height,
     bytes: upload.bytes,
     createdAt: date.valueOf(),
+    updatedAt: null,
+    _hidden: false,
   };
 }
