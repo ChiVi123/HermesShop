@@ -40,11 +40,15 @@ export async function crawlCollection(url: string) {
     );
 
     const maxProductLength = productLinkList.length;
+    let productCount = 0;
 
     logging.info(LOGGING_PREFIX, 'Product total:', maxProductLength);
 
     for (const productVariantLinks of productLinkList) {
-      await crawlWebsiteProduct(productVariantLinks, page);
+      const product = await crawlWebsiteProduct(productVariantLinks, page);
+      if (product) {
+        logging.info(LOGGING_PREFIX, `created ${product.name}`, '| process:', ++productCount);
+      }
     }
   } catch (error) {
     logging.danger(LOGGING_PREFIX, 'Error crawling website:', error);
@@ -57,7 +61,7 @@ export async function crawlCollection(url: string) {
     logging.info(LOGGING_PREFIX, 'Collection finished');
   }
 }
-async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<void> {
+async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Product | undefined> {
   if (hrefList.length === 0) {
     logging.info(LOGGING_PREFIX, 'No link found');
     return;
@@ -109,7 +113,7 @@ async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<void
     return;
   }
 
-  const href = hrefList.shift();
+  const [href] = hrefList;
   if (href === undefined) {
     logging.info(LOGGING_PREFIX, 'Href list is empty');
     return;
@@ -117,12 +121,13 @@ async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<void
 
   await page.goto(href);
   product = await crawlProductRaw(page);
+  product.skuIds = hrefList;
 
   // Save to JSON
   PRODUCT_CACHED[productId] = product;
   saveDataToJsonFile(PATH_PRODUCT_JSON, PRODUCT_CACHED);
 
-  logging.info(LOGGING_PREFIX, `[${product.name}] [${product.attrs.map((item) => item.key)}]`);
+  return product;
 }
 
 async function crawlProductRaw(page: Page): Promise<Product> {
@@ -138,6 +143,7 @@ async function crawlProductRaw(page: Page): Promise<Product> {
         category: category?.textContent?.trim() ?? 'Sandals',
         name: root.querySelector(selector.NAME)?.textContent?.trim() ?? '',
         shortDescription: root.querySelector(selector.SHORT_DESCRIPTION)?.textContent?.trim() ?? '',
+        skuIds: [],
         options: [
           {
             key: 'color',

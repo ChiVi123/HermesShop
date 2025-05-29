@@ -12,6 +12,7 @@ export type Product = {
     key: string;
     value: string;
   }[];
+  skuIds: string[];
 };
 export type Sku = {
   productId: string;
@@ -23,10 +24,6 @@ export type Sku = {
     key: string;
     value: string;
   }[];
-};
-export type ProductJSON = {
-  products: Product[];
-  urlCached: Record<string, boolean>;
 };
 export type ImageJSON = Record<string, Image>;
 export type ProductInfoJSON = Record<string, Product>;
