@@ -8,9 +8,9 @@ import NextError from '~/helpers/nextError';
 import type { CategoryModel, CategoryModelProperties } from '~/models/categoryModel';
 import type { CategoryRepository } from '~/repositories/categoryRepository';
 
-const baseSkuSchema = getBaseValidSchema<CategoryModel>();
+const baseCategorySchema = getBaseValidSchema<CategoryModel>();
 
-const SCHEMA = baseSkuSchema.keys({
+const SCHEMA = baseCategorySchema.keys({
   name: Joi.string().required().trim().strict(),
   slugify: Joi.string().required().trim().strict(),
 });

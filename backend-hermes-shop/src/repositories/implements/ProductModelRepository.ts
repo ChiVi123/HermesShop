@@ -92,7 +92,7 @@ const AGGREGATE_SPECIFY_PRODUCT_FIELDS = {
   createdAt: 1,
   updatedAt: 1,
 };
-const AGGREGATE_SPECIFY_SKU_ITEM_FIELDS = {
+const AGGREGATE_SPECIFY_PRODUCT_VARIANT_FIELDS = {
   _id: 1,
   productId: 1,
   discountPrice: 1,
@@ -131,7 +131,7 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
         {
           $project: {
             ...AGGREGATE_SPECIFY_PRODUCT_FIELDS,
-            sku: AGGREGATE_SPECIFY_SKU_ITEM_FIELDS,
+            sku: AGGREGATE_SPECIFY_PRODUCT_VARIANT_FIELDS,
           },
         },
       ])
@@ -166,7 +166,7 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
         {
           $project: {
             ...AGGREGATE_SPECIFY_PRODUCT_FIELDS,
-            skus: AGGREGATE_SPECIFY_SKU_ITEM_FIELDS,
+            skus: AGGREGATE_SPECIFY_PRODUCT_VARIANT_FIELDS,
             shortDescription: 1,
             attrs: 1,
           },

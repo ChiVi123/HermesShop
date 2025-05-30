@@ -14,7 +14,7 @@ export enum COLLECTION_PRODUCT_SELECTOR {
   ITEM_LINK = 'a',
   ITEM_BUTTON = 'button.ThumbnailButton',
 }
-export enum SKU_SELECTOR {
+export enum PRODUCT_VARIANT_SELECTOR {
   ROOT = '#pdp-container > div > div:first-child',
   LEFT_SIDE = '& > :not(aside)',
   ASIDE = 'aside',
