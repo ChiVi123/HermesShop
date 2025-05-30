@@ -12,6 +12,7 @@ import {
 } from '~/components/ui/breadcrumb';
 import { Button } from '~/components/ui/button';
 import ProductImageSelect from './components/ProductImageSelect';
+import ProductSelectors from './components/ProductSelectors';
 
 type Props = {
   params: Promise<{ slugify: string }>;
@@ -32,7 +33,6 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
   const { slugify } = await params;
   const serverApi = process.env.SERVER_API ? process.env.SERVER_API + `/v1/products/${slugify}` : '/api';
   const result = await fetch(serverApi).then((data) => data.json());
-
   const sku = result?.skus[0];
 
   return (
@@ -91,6 +91,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
           </div>
 
           {/* TODO: insert variants and options */}
+          <ProductSelectors options={result.options} skus={result.skus} />
 
           <div>
             <Button size='lg' className='w-full rounded-none'>
