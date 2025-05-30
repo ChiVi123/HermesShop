@@ -52,16 +52,16 @@ const AGGREGATE_PRODUCT_DEFAULT = [
       from: COLLECTION_NAME_KEYS.PRODUCT_VARIANTS,
       localField: '_id',
       foreignField: 'productId',
-      as: 'skus',
+      as: 'variants',
     },
   },
-  { $unwind: '$skus' },
+  { $unwind: '$variants' },
   {
     $lookup: {
       from: COLLECTION_NAME_KEYS.IMAGES,
-      let: { imageIds: '$skus.imageIds' },
+      let: { imageIds: '$variants.imageIds' },
       pipeline: [{ $match: { $expr: { $in: ['$_id', '$$imageIds'] } } }],
-      as: 'skus.images',
+      as: 'variants.images',
     },
   },
 ];
@@ -71,9 +71,8 @@ const AGGREGATE_PRODUCT_GROUP = {
   slugify: { $first: '$slugify' },
   gender: { $first: '$gender' },
   rating: { $first: '$rating' },
-  options: { $first: '$options' },
   category: { $first: '$category' },
-  skus: { $push: '$skus' },
+  variants: { $push: '$variants' },
   createdAt: { $first: '$createdAt' },
   updatedAt: { $first: '$updatedAt' },
 };
@@ -83,7 +82,6 @@ const AGGREGATE_SPECIFY_PRODUCT_FIELDS = {
   slugify: 1,
   gender: 1,
   rating: 1,
-  options: 1,
   category: {
     _id: 1,
     name: 1,
@@ -97,7 +95,7 @@ const AGGREGATE_SPECIFY_PRODUCT_VARIANT_FIELDS = {
   productId: 1,
   discountPrice: 1,
   price: 1,
-  specs: 1,
+  sizes: 1,
   images: {
     _id: 1,
     publicId: 1,
@@ -123,7 +121,7 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
         {
           $addFields: {
             category: { $arrayElemAt: ['$category', FIRST_ELEMENT_INDEX] },
-            sku: { $arrayElemAt: ['$skus', FIRST_ELEMENT_INDEX] },
+            variant: { $arrayElemAt: ['$variants', FIRST_ELEMENT_INDEX] },
           },
         },
         { $sort: { createdAt: -1 } },
@@ -131,7 +129,7 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
         {
           $project: {
             ...AGGREGATE_SPECIFY_PRODUCT_FIELDS,
-            sku: AGGREGATE_SPECIFY_PRODUCT_VARIANT_FIELDS,
+            variant: AGGREGATE_SPECIFY_PRODUCT_VARIANT_FIELDS,
           },
         },
       ])
@@ -166,7 +164,7 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
         {
           $project: {
             ...AGGREGATE_SPECIFY_PRODUCT_FIELDS,
-            skus: AGGREGATE_SPECIFY_PRODUCT_VARIANT_FIELDS,
+            variants: AGGREGATE_SPECIFY_PRODUCT_VARIANT_FIELDS,
             shortDescription: 1,
             attrs: 1,
           },

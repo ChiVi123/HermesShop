@@ -52,7 +52,7 @@ class ProductController extends Controller {
     res.status(StatusCodes.OK).json(updatedProduct);
   }
 
-  @routeDecorator('patch', '/product-variant/:id', multerMiddleware.array('images'))
+  @routeDecorator('patch', '/variant/:id', multerMiddleware.array('images'))
   @validateDecorator(productVariantValidate)
   public async updateProductVariant(req: Request, res: Response) {
     const productVariantId = req.params.id;
