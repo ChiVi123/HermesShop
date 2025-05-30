@@ -10,17 +10,16 @@ export interface ProductModel extends Model {
   rating: number;
   gender: string;
   attrs: ProductAttr[];
-  options: ProductOption[];
   _status: STATUS_PRODUCT_KEYS;
 }
-export interface SkuModel extends Model {
+export interface ProductVariantModel extends Model {
   productId: ModelId;
   name: string;
   slugify: string;
+  color: string;
   price: number;
   discountPrice: number;
-  specs: SkuSpec[];
-  stock: number;
+  sizes: ProductSize[];
   imageIds: ModelIds;
 }
 export interface ProductOption {
@@ -31,10 +30,9 @@ export interface ProductAttr {
   key: string;
   value: string;
 }
-export interface SkuSpec {
-  key: string;
-  value: string;
-  unit?: string;
+export interface ProductSize {
+  size: string;
+  stock: number;
 }
 
 export type ProductResponse = ModelResponse;
@@ -48,4 +46,4 @@ export type ProductReqBody = {
 };
 
 export type ProductModelProperties = keyof WithId<ProductModel>;
-export type SkuModelProperties = keyof WithId<SkuModel>;
+export type ProductVariantModelProperties = keyof WithId<ProductVariantModel>;

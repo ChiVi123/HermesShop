@@ -3,16 +3,16 @@ import { createImage } from '~/helpers/createImage';
 import type { ProductReqBody } from '~/models/productModel';
 import { cloudinaryProvider } from '~/providers/cloudinaryProvider';
 import { ProductModelRepository } from '~/repositories/implements/ProductModelRepository';
-import { SkuModelRepository } from '~/repositories/implements/SkuModelRepository';
+import { ProductVariantModelRepository } from '~/repositories/implements/ProductVariantModelRepository';
 import type { MulterManyFile } from '~/types/requestMulter';
 
 export class SkuService {
   private productRepository: ProductModelRepository;
-  private skuRepository: SkuModelRepository;
+  private skuRepository: ProductVariantModelRepository;
 
   constructor() {
     this.productRepository = new ProductModelRepository();
-    this.skuRepository = new SkuModelRepository();
+    this.skuRepository = new ProductVariantModelRepository();
   }
 
   public getBySlugify(slugify: string) {
