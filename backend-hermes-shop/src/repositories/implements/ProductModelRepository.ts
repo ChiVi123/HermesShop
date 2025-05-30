@@ -47,43 +47,101 @@ const SCHEMA = baseSchema.keys({
 });
 const INVALID_FIELDS: ProductModelProperties[] = ['_id', 'createdAt'];
 
+// AGGREGATE
+const AGGREGATE_PRODUCT_DEFAULT = [
+  {
+    $lookup: {
+      from: COLLECTION_NAME_KEYS.CATEGORIES,
+      localField: 'categoryId',
+      foreignField: '_id',
+      as: 'category',
+    },
+  },
+  {
+    $lookup: {
+      from: COLLECTION_NAME_KEYS.SKUS,
+      localField: '_id',
+      foreignField: 'productId',
+      as: 'skus',
+    },
+  },
+  { $unwind: '$skus' },
+  {
+    $lookup: {
+      from: COLLECTION_NAME_KEYS.IMAGES,
+      let: { imageIds: '$skus.imageIds' },
+      pipeline: [{ $match: { $expr: { $in: ['$_id', '$$imageIds'] } } }],
+      as: 'skus.images',
+    },
+  },
+];
+const AGGREGATE_PRODUCT_GROUP = {
+  _id: '$_id',
+  name: { $first: '$name' },
+  slugify: { $first: '$slugify' },
+  gender: { $first: '$gender' },
+  rating: { $first: '$rating' },
+  options: { $first: '$options' },
+  category: { $first: '$category' },
+  skus: { $push: '$skus' },
+  createdAt: { $first: '$createdAt' },
+  updatedAt: { $first: '$updatedAt' },
+};
+const AGGREGATE_SPECIFY_PRODUCT_FIELDS = {
+  _id: 1,
+  name: 1,
+  slugify: 1,
+  gender: 1,
+  rating: 1,
+  options: 1,
+  category: {
+    _id: 1,
+    name: 1,
+    slugify: 1,
+  },
+  createdAt: 1,
+  updatedAt: 1,
+};
+const AGGREGATE_SPECIFY_SKU_ITEM_FIELDS = {
+  _id: 1,
+  productId: 1,
+  discountPrice: 1,
+  price: 1,
+  specs: 1,
+  images: {
+    _id: 1,
+    publicId: 1,
+    url: 1,
+    width: 1,
+    height: 1,
+  },
+};
+const LIMIT_ITEM_PER_PAGE = 12;
+const FIRST_ELEMENT_INDEX = 0;
+
 export class ProductModelRepository extends RepositoryMongoDB<ProductModel> implements ProductRepository<ProductModel> {
   constructor() {
     super(COLLECTION_NAME_KEYS.PRODUCTS, SCHEMA, { invalidFields: INVALID_FIELDS });
   }
 
+  // TODO: get items by params (search api)
   public findAll() {
     return this.collection
       .aggregate([
+        ...AGGREGATE_PRODUCT_DEFAULT,
+        { $group: AGGREGATE_PRODUCT_GROUP },
         {
-          $lookup: {
-            from: COLLECTION_NAME_KEYS.SKUS,
-            localField: '_id',
-            foreignField: 'productId',
-            as: 'skus',
+          $addFields: {
+            category: { $arrayElemAt: ['$category', FIRST_ELEMENT_INDEX] },
+            sku: { $arrayElemAt: ['$skus', FIRST_ELEMENT_INDEX] },
           },
         },
-        {
-          $lookup: {
-            from: COLLECTION_NAME_KEYS.CATEGORIES,
-            localField: 'categoryId',
-            foreignField: '_id',
-            as: 'category',
-          },
-        },
+        { $sort: { createdAt: -1 } },
+        { $limit: LIMIT_ITEM_PER_PAGE },
         {
           $project: {
-            _id: 1,
-            name: 1,
-            shortDescription: 1,
-            gender: 1,
-            slugify: 1,
-            category: {
-              $arrayElemAt: ['$category', 0],
-            },
-            sku: {
-              $arrayElemAt: ['$skus', 0],
-            },
+            ...AGGREGATE_SPECIFY_PRODUCT_FIELDS,
+            sku: AGGREGATE_SPECIFY_SKU_ITEM_FIELDS,
           },
         },
       ])
@@ -101,43 +159,32 @@ export class ProductModelRepository extends RepositoryMongoDB<ProductModel> impl
   public async getDetailsBySlugify(slugify: string): Promise<Document | null> {
     const result = await this.collection
       .aggregate([
+        ...AGGREGATE_PRODUCT_DEFAULT,
         { $match: { slugify } },
         {
-          $lookup: {
-            from: COLLECTION_NAME_KEYS.SKUS,
-            localField: '_id',
-            foreignField: 'productId',
-            as: 'skus',
+          $group: {
+            ...AGGREGATE_PRODUCT_GROUP,
+            shortDescription: { $first: '$shortDescription' },
+            attrs: { $first: '$attrs' },
           },
         },
         {
-          $lookup: {
-            from: COLLECTION_NAME_KEYS.CATEGORIES,
-            localField: 'categoryId',
-            foreignField: '_id',
-            as: 'category',
+          $addFields: {
+            category: { $arrayElemAt: ['$category', FIRST_ELEMENT_INDEX] },
           },
         },
         {
           $project: {
-            _id: 1,
-            name: 1,
+            ...AGGREGATE_SPECIFY_PRODUCT_FIELDS,
+            skus: AGGREGATE_SPECIFY_SKU_ITEM_FIELDS,
             shortDescription: 1,
             attrs: 1,
-            slugify: 1,
-            gender: 1,
-            skus: 1,
-            category: {
-              $arrayElemAt: ['$category', 0],
-            },
-            options: 1,
-            rating: 1,
           },
         },
       ])
       .toArray();
 
-    return result[0] ?? null;
+    return result[FIRST_ELEMENT_INDEX] ?? null;
   }
 
   public async insertOne(data: Record<string, unknown>): Promise<InsertOneResult<ProductModel>> {
