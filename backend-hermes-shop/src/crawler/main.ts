@@ -8,7 +8,11 @@ import AsyncExitHook from 'async-exit-hook';
 import readline from 'readline';
 import slug from 'slug';
 import { closeDB, connectDB } from '~/core/mongodb';
+import { PATH_VARIANT_JSON } from './constants';
 import { crawlCollection } from './crawl';
+import type { ProductVariantJSON } from './types';
+import { uploadImages } from './uploadImages';
+import { randomInt, readDataFromJsonFile, saveDataToJsonFile } from './utils';
 
 const LOGGING_APP_PREFIX = '[App]';
 const LOGGING_APP_ERROR_PREFIX = '[App Error]';
@@ -40,7 +44,7 @@ function startReadline(): void {
       case 'image':
         logging.info(LOGGING_APP_PREFIX, 'Starting upload image...');
 
-        // await uploadSkuImages();
+        await uploadProductVariantImages();
 
         break;
       case 'mongo':
@@ -87,18 +91,17 @@ function startReadline(): void {
   });
 }
 
-// TODO: refactor upload image
-// async function uploadSkuImages() {
-//   const skuJSON = readDataFromJsonFile<ProductVariantJSON>(PATH_VARIANT_JSON) || {};
+async function uploadProductVariantImages() {
+  const variantJSON = readDataFromJsonFile<ProductVariantJSON>(PATH_VARIANT_JSON) || {};
 
-//   for (const skus of Object.values(skuJSON)) {
-//     for (const sku of skus) {
-//       sku.images = await uploadImages(sku.images);
-//       sku.stock = randomInt(MIN_STOCK, MAX_STOCK + 1);
-//     }
-//   }
+  for (const variant of Object.values(variantJSON)) {
+    variant.images = await uploadImages(variant.images);
+    variant.sizes.forEach((item) => {
+      item.stock = randomInt(MIN_STOCK, MAX_STOCK + 1);
+    });
+  }
 
-//   saveDataToJsonFile(PATH_VARIANT_JSON, skuJSON);
+  saveDataToJsonFile(PATH_VARIANT_JSON, variantJSON);
 
-//   logging.info(LOGGING_APP_PREFIX, 'Update sku data successfully');
-// }
+  logging.info(LOGGING_APP_PREFIX, 'Update variant data successfully');
+}
