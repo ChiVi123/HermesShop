@@ -1,14 +1,14 @@
 import Joi from 'joi';
 import type { Document, InsertOneResult, WithId } from 'mongodb';
 import { ObjectId } from 'mongodb';
-import { COLLECTION_NAME_KEYS, GENDER_KEYS, OPTION_TYPE_KEYS, STATUS_PRODUCT_KEYS } from '~/configs/keys';
+import { COLLECTION_NAME_KEYS, GENDER_KEYS, STATUS_PRODUCT_KEYS } from '~/configs/keys';
 import { StatusCodes } from '~/configs/statusCodes';
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/configs/validates';
 import type { ModelId } from '~/core/model/types';
 import { RepositoryMongoDB } from '~/core/repository/RepositoryMongoDB';
 import getBaseValidSchema from '~/helpers/getBaseValidSchema';
 import NextError from '~/helpers/nextError';
-import type { ProductAttr, ProductModel, ProductModelProperties, ProductOption } from '~/models/productModel';
+import type { ProductAttr, ProductModel, ProductModelProperties } from '~/models/productModel';
 import type { ProductRepository } from '~/repositories/productRepository';
 
 const baseSchema = getBaseValidSchema<ProductModel>();
@@ -31,16 +31,6 @@ const SCHEMA = baseSchema.keys({
       }),
     )
     .default([]),
-  options: Joi.array()
-    .items(
-      Joi.object<ProductOption>({
-        key: Joi.string().required().trim().strict(),
-        type: Joi.string()
-          .valid(...Object.values(OPTION_TYPE_KEYS))
-          .default(OPTION_TYPE_KEYS.SELECT),
-      }),
-    )
-    .default([]),
   _status: Joi.string()
     .valid(...Object.values(STATUS_PRODUCT_KEYS))
     .default(STATUS_PRODUCT_KEYS.RAW),
@@ -59,7 +49,7 @@ const AGGREGATE_PRODUCT_DEFAULT = [
   },
   {
     $lookup: {
-      from: COLLECTION_NAME_KEYS.SKUS,
+      from: COLLECTION_NAME_KEYS.PRODUCT_VARIANTS,
       localField: '_id',
       foreignField: 'productId',
       as: 'skus',

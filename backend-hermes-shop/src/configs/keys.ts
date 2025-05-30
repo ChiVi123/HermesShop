@@ -1,6 +1,6 @@
 export enum COLLECTION_NAME_KEYS {
   PRODUCTS = 'products',
-  SKUS = 'skus',
+  PRODUCT_VARIANTS = 'product_variants',
   USERS = 'users',
   CATEGORIES = 'categories',
   IMAGES = 'images',

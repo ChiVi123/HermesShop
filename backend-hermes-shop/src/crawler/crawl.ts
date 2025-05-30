@@ -4,15 +4,15 @@ import {
   COLLECTION_PRODUCT_SELECTOR,
   LOGGING_PREFIX,
   PATH_PRODUCT_JSON,
-  PATH_SKU_JSON,
+  PATH_VARIANT_JSON,
   PRODUCT_DETAIL_SELECTOR,
   SKU_SELECTOR,
 } from './constants';
-import type { Product, ProductJSON, Sku, SkuJSON } from './types';
+import type { Product, ProductJSON, ProductVariant, ProductVariantJSON } from './types';
 import { generateUniqueId, readDataFromJsonFile, saveDataToJsonFile, urlValidation } from './utils';
 
 const PRODUCT_CACHED = readDataFromJsonFile<ProductJSON>(PATH_PRODUCT_JSON) || {};
-const SKU_CACHED = readDataFromJsonFile<SkuJSON>(PATH_SKU_JSON) || {};
+const SKU_CACHED = readDataFromJsonFile<ProductVariantJSON>(PATH_VARIANT_JSON) || {};
 
 export async function crawlCollection(url: string) {
   if (!urlValidation(url)) return;
@@ -47,7 +47,7 @@ export async function crawlCollection(url: string) {
     for (const productVariantLinks of productLinkList) {
       const product = await crawlWebsiteProduct(productVariantLinks, page);
       if (product) {
-        logging.info(LOGGING_PREFIX, `created ${product.name}`, '| process:', ++productCount);
+        logging.info(LOGGING_PREFIX, `created ${product.name}`, '| process:', `${++productCount}/${maxProductLength}`);
       }
     }
   } catch (error) {
@@ -61,6 +61,7 @@ export async function crawlCollection(url: string) {
     logging.info(LOGGING_PREFIX, 'Collection finished');
   }
 }
+
 async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Product | undefined> {
   if (hrefList.length === 0) {
     logging.info(LOGGING_PREFIX, 'No link found');
@@ -79,7 +80,7 @@ async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Prod
     const url = new URL(href);
     const skuCached = SKU_CACHED[href];
     if (SKU_CACHED[href]) {
-      productId = skuCached[0].productId ?? null;
+      productId = skuCached.productId ?? null;
       logging.info(LOGGING_PREFIX, `[Already sku]: ${url.pathname}`);
       continue;
     }
@@ -91,11 +92,11 @@ async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Prod
       productId = generateUniqueId();
     }
 
-    const skus = await crawlProductSkuRaw(productId, page);
+    const skus = await crawlProductVariant(productId, page);
 
     // Save to JSON
     SKU_CACHED[href] = skus;
-    saveDataToJsonFile(PATH_SKU_JSON, SKU_CACHED);
+    saveDataToJsonFile(PATH_VARIANT_JSON, SKU_CACHED);
 
     currentProcess++;
 
@@ -120,8 +121,8 @@ async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Prod
   }
 
   await page.goto(href);
-  product = await crawlProductRaw(page);
-  product.skuIds = hrefList;
+  product = await crawlProduct(page);
+  product.variantIds = hrefList;
 
   // Save to JSON
   PRODUCT_CACHED[productId] = product;
@@ -130,30 +131,20 @@ async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Prod
   return product;
 }
 
-async function crawlProductRaw(page: Page): Promise<Product> {
+async function crawlProduct(page: Page): Promise<Product> {
   return page.$eval(
     PRODUCT_DETAIL_SELECTOR.ROOT,
     (root, selector) => {
-      const [, , category] = root.querySelectorAll(selector.CATEGORY);
       const REGEX_REMOVE_ATTRIBUTE_CLASS = /\s*class="[^"]*"/g;
       const REGEX_REMOVE_SCROLL_ELEMENT =
         /<div[^>]*data-testid="size-chart-scrollbar"[^>]*role="scrollbar"[^>]*>[\s\S]*?<\/div><\/div>/g;
+
+      const [, , category] = root.querySelectorAll(selector.CATEGORY);
 
       return {
         category: category?.textContent?.trim() ?? 'Sandals',
         name: root.querySelector(selector.NAME)?.textContent?.trim() ?? '',
         shortDescription: root.querySelector(selector.SHORT_DESCRIPTION)?.textContent?.trim() ?? '',
-        skuIds: [],
-        options: [
-          {
-            key: 'color',
-            type: 'select_with_image',
-          },
-          {
-            key: 'size',
-            type: 'select',
-          },
-        ],
         attrs: Array.from(root.querySelectorAll(selector.SPECIFICATION)).map((el) => ({
           key: el.querySelector(selector.SPECIFICATION_KEY)?.textContent?.trim() ?? '',
           value:
@@ -163,13 +154,14 @@ async function crawlProductRaw(page: Page): Promise<Product> {
               .replace(REGEX_REMOVE_ATTRIBUTE_CLASS, '')
               .replace(REGEX_REMOVE_SCROLL_ELEMENT, '') ?? '',
         })),
+        variantIds: [],
       };
     },
     PRODUCT_DETAIL_SELECTOR,
   );
 }
 
-async function crawlProductSkuRaw(productId: string, page: Page): Promise<Sku[]> {
+async function crawlProductVariant(productId: string, page: Page): Promise<ProductVariant> {
   return page.$eval(
     SKU_SELECTOR.ROOT,
     (root, selector, id) => {
@@ -198,23 +190,17 @@ async function crawlProductSkuRaw(productId: string, page: Page): Promise<Sku[]>
         price = discountPrice;
       }
 
-      return productSizes.map((size) => ({
+      return {
         productId: id,
+        color: productColorName,
         price,
         discountPrice,
-        stock: 1,
         images,
-        specs: [
-          {
-            key: 'color',
-            value: productColorName,
-          },
-          {
-            key: 'size',
-            value: size,
-          },
-        ],
-      }));
+        sizes: productSizes.map((size) => ({
+          size,
+          stock: 1,
+        })),
+      };
     },
     SKU_SELECTOR,
     productId,

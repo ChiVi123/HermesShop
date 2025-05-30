@@ -4,27 +4,23 @@ export type Product = {
   category: string;
   name: string;
   shortDescription: string;
-  options: {
-    key: string;
-    type: string;
-  }[];
   attrs: {
     key: string;
     value: string;
   }[];
-  skuIds: string[];
+  variantIds: string[];
 };
-export type Sku = {
+export type ProductVariant = {
   productId: string;
+  color: string;
   price: number;
   discountPrice: number;
-  stock: number;
   images: string[] | ImageModel[];
-  specs: {
-    key: string;
-    value: string;
+  sizes: {
+    size: string;
+    stock: number;
   }[];
 };
 export type ImageJSON = Record<string, ImageModel>;
 export type ProductJSON = Record<string, Product>;
-export type SkuJSON = Record<string, Sku[]>;
+export type ProductVariantJSON = Record<string, ProductVariant>;

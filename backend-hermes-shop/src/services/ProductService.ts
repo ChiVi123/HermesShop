@@ -5,18 +5,18 @@ import NextError from '~/helpers/nextError';
 import type { ProductReqBody } from '~/models/productModel';
 import { CategoryModelRepository } from '~/repositories/implements/CategoryModelRepository';
 import { ProductModelRepository } from '~/repositories/implements/ProductModelRepository';
-import { SkuModelRepository } from '~/repositories/implements/SkuModelRepository';
+import { ProductVariantModelRepository } from '~/repositories/implements/ProductVariantModelRepository';
 
 type CreateReqBody = Omit<Request<unknown, unknown, ProductReqBody>['body'], 'skus'>;
 
 export class ProductService {
   private productRepository: ProductModelRepository;
-  private skuRepository: SkuModelRepository;
+  private skuRepository: ProductVariantModelRepository;
   private categoryRepository: CategoryModelRepository;
 
   constructor() {
     this.productRepository = new ProductModelRepository();
-    this.skuRepository = new SkuModelRepository();
+    this.skuRepository = new ProductVariantModelRepository();
     this.categoryRepository = new CategoryModelRepository();
   }
 
