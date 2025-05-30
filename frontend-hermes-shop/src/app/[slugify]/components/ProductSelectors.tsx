@@ -5,25 +5,13 @@ import { useState } from 'react';
 import { cn } from '~/lib/utils';
 
 interface Props {
-  options: { key: string; type: string }[];
-  skus: { images: { url: string }[]; specs: { key: string; value: string }[] }[];
+  variants: { color: string; images: { url: string }[]; sizes: { size: string; stock: number }[] }[];
 }
 
-const COLOR_POS = 0;
-const SIZE_POS = 1;
 const IMAGE_POS = 1;
 
-export default function ProductSelectors({ options, skus }: Props) {
+export default function ProductSelectors({ variants }: Props) {
   const [color, setColor] = useState('');
-
-  const selectorName = options[COLOR_POS].key;
-  const selector = skus.reduce((prev, current) => {
-    const specify = current.specs.find((spec) => spec.key === selectorName);
-    if (specify && !prev.some((item) => item.value === specify.value)) {
-      prev.push({ value: specify.value, url: current.images[IMAGE_POS].url });
-    }
-    return prev;
-  }, [] as { value: string; url: string }[]);
 
   return (
     <>
@@ -32,15 +20,15 @@ export default function ProductSelectors({ options, skus }: Props) {
         {color}
       </div>
       <div className='grid grid-cols-6 gap-2 mb-6'>
-        {selector.map((item) => (
+        {variants.map((item) => (
           <span
-            key={item.value}
+            key={item.color}
             className={cn('block size-10 rounded-full overflow-hidden', {
-              'ring-2 ring-offset-2 ring-amber-800': item.value === color,
+              'ring-2 ring-offset-2 ring-amber-800': item.color === color,
             })}
-            onClick={() => setColor(item.value)}
+            onClick={() => setColor(item.color)}
           >
-            <Image src={item.url} alt={item.value} width={40} height={40} />
+            <Image src={item.images[IMAGE_POS].url} alt={item.color} width={40} height={40} />
           </span>
         ))}
       </div>

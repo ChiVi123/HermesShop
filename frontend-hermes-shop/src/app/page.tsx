@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '~/components/ui/carousel';
+import { cn } from '~/lib/utils';
 
 const SLIDES = [
   {
@@ -20,6 +21,7 @@ const SLIDES = [
     imageSrc: '/images/home_page_right_collection.avif',
   },
 ];
+const FIRST_IMAGE_INDEX = 0;
 
 export default async function Home() {
   const serverApi = process.env.SERVER_API ? process.env.SERVER_API + '/v1/products/all' : '/api';
@@ -70,14 +72,14 @@ export default async function Home() {
 
           {Array.isArray(result) && (
             <div className='grid grid-cols-2 gap-2'>
-              {result.slice(0, 4).map(({ _id, name, sku }) => (
+              {result.slice(0, 4).map(({ _id, name, variant }) => (
                 <div key={_id} className='bg-accent'>
                   <div className='mb-2 overflow-hidden group'>
                     <Image
-                      src={sku.images[0].url}
+                      src={variant.images[FIRST_IMAGE_INDEX].url}
                       alt={name}
-                      width={sku.images[0].width * 0.25}
-                      height={sku.images[0].height * 0.25}
+                      width={variant.images[FIRST_IMAGE_INDEX].width * 0.25}
+                      height={variant.images[FIRST_IMAGE_INDEX].height * 0.25}
                       className='size-full transition-transform duration-300 ease-in-out will-change-transform group-hover:scale-105'
                     />
                   </div>
@@ -86,11 +88,11 @@ export default async function Home() {
                     <p className='text-sm font-bold'>{name}</p>
                     <p className='flex items-center gap-1 text-xs font-semibold'>
                       <span className='text-red-800'>$90</span>
-                      <span className='line-through'>${sku.price}</span>
+                      <span className='line-through'>${variant.price}</span>
                     </p>
                   </div>
 
-                  <p className='p-4 text-xs font-semibold'>{sku.specs[0].value.replace(/\s*\(.*?\)/, '')}</p>
+                  <p className='p-4 text-xs font-semibold'>{variant.color.replace(/\s*\(.*?\)/, '')}</p>
                 </div>
               ))}
             </div>
@@ -104,30 +106,34 @@ export default async function Home() {
         {Array.isArray(result) && (
           <Carousel opts={{ align: 'start', loop: true }} className='[&_>_div]:px-10'>
             <CarouselContent className='-ml-2'>
-              {result.map(({ _id, name, slugify, sku }) => (
+              {result.map(({ _id, name, slugify, variant }) => (
                 <CarouselItem key={_id} className='basis-1/4 pl-2'>
                   <Link href={`/${slugify}`} className='h-full'>
                     <Card className='gap-4 py-0 h-full border-0 rounded-none shadow-none group'>
                       <CardHeader className='px-0'>
                         <div className='mb-2 bg-accent overflow-hidden'>
                           <Image
-                            src={sku.images[0].url}
+                            src={variant.images[FIRST_IMAGE_INDEX].url}
                             alt={name}
-                            width={sku.images[0].width * 0.1}
-                            height={sku.images[0].height * 0.1}
+                            width={variant.images[FIRST_IMAGE_INDEX].width * 0.1}
+                            height={variant.images[FIRST_IMAGE_INDEX].height * 0.1}
                             className='size-full transition-transform duration-300 ease-in-out will-change-transform group-hover:scale-105'
                           />
                         </div>
 
                         <CardTitle className='font-bold'>{name}</CardTitle>
                         <CardDescription className='text-base'>
-                          {sku.specs[0].value.replace(/\s*\(.*?\)/, '')}
+                          {variant.color.replace(/\s*\(.*?\)/, '')}
                         </CardDescription>
                       </CardHeader>
 
                       <CardContent className='flex items-center gap-1 px-0 font-semibold'>
-                        <span className='text-red-800'>$90</span>
-                        <span className='line-through'>${sku.price}</span>
+                        {variant.value > variant.discountPrice && (
+                          <span className='text-red-800'>${variant.discountPrice}</span>
+                        )}
+                        <span className={cn({ 'line-through': variant.value > variant.discountPrice })}>
+                          ${variant.price}
+                        </span>
                       </CardContent>
                     </Card>
                   </Link>

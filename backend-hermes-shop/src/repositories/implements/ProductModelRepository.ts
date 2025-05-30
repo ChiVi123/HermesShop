@@ -92,6 +92,7 @@ const AGGREGATE_SPECIFY_PRODUCT_FIELDS = {
 };
 const AGGREGATE_SPECIFY_PRODUCT_VARIANT_FIELDS = {
   _id: 1,
+  color: 1,
   productId: 1,
   discountPrice: 1,
   price: 1,
