@@ -6,13 +6,13 @@ import {
   PATH_PRODUCT_JSON,
   PATH_VARIANT_JSON,
   PRODUCT_DETAIL_SELECTOR,
-  SKU_SELECTOR,
+  PRODUCT_VARIANT_SELECTOR,
 } from './constants';
 import type { Product, ProductJSON, ProductVariant, ProductVariantJSON } from './types';
 import { generateUniqueId, readDataFromJsonFile, saveDataToJsonFile, urlValidation } from './utils';
 
 const PRODUCT_CACHED = readDataFromJsonFile<ProductJSON>(PATH_PRODUCT_JSON) || {};
-const SKU_CACHED = readDataFromJsonFile<ProductVariantJSON>(PATH_VARIANT_JSON) || {};
+const PRODUCT_VARIANT_CACHED = readDataFromJsonFile<ProductVariantJSON>(PATH_VARIANT_JSON) || {};
 
 export async function crawlCollection(url: string) {
   if (!urlValidation(url)) return;
@@ -78,10 +78,10 @@ async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Prod
       continue;
     }
     const url = new URL(href);
-    const skuCached = SKU_CACHED[href];
-    if (SKU_CACHED[href]) {
-      productId = skuCached.productId ?? null;
-      logging.info(LOGGING_PREFIX, `[Already sku]: ${url.pathname}`);
+    const productVariantCached = PRODUCT_VARIANT_CACHED[href];
+    if (PRODUCT_VARIANT_CACHED[href]) {
+      productId = productVariantCached.productId ?? null;
+      logging.info(LOGGING_PREFIX, `[Already product variant]: ${url.pathname}`);
       continue;
     }
 
@@ -92,11 +92,11 @@ async function crawlWebsiteProduct(hrefList: string[], page: Page): Promise<Prod
       productId = generateUniqueId();
     }
 
-    const skus = await crawlProductVariant(productId, page);
+    const productVariants = await crawlProductVariant(productId, page);
 
     // Save to JSON
-    SKU_CACHED[href] = skus;
-    saveDataToJsonFile(PATH_VARIANT_JSON, SKU_CACHED);
+    PRODUCT_VARIANT_CACHED[href] = productVariants;
+    saveDataToJsonFile(PATH_VARIANT_JSON, PRODUCT_VARIANT_CACHED);
 
     currentProcess++;
 
@@ -163,7 +163,7 @@ async function crawlProduct(page: Page): Promise<Product> {
 
 async function crawlProductVariant(productId: string, page: Page): Promise<ProductVariant> {
   return page.$eval(
-    SKU_SELECTOR.ROOT,
+    PRODUCT_VARIANT_SELECTOR.ROOT,
     (root, selector, id) => {
       const leftSideEl = root.querySelector(selector.LEFT_SIDE)!;
       const asideEl = root.querySelector(selector.ASIDE)!;
@@ -202,7 +202,7 @@ async function crawlProductVariant(productId: string, page: Page): Promise<Produ
         })),
       };
     },
-    SKU_SELECTOR,
+    PRODUCT_VARIANT_SELECTOR,
     productId,
   );
 }

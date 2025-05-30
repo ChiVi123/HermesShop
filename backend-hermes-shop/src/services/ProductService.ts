@@ -5,18 +5,15 @@ import NextError from '~/helpers/nextError';
 import type { ProductReqBody } from '~/models/productModel';
 import { CategoryModelRepository } from '~/repositories/implements/CategoryModelRepository';
 import { ProductModelRepository } from '~/repositories/implements/ProductModelRepository';
-import { ProductVariantModelRepository } from '~/repositories/implements/ProductVariantModelRepository';
 
-type CreateReqBody = Omit<Request<unknown, unknown, ProductReqBody>['body'], 'skus'>;
+type CreateReqBody = Omit<Request<unknown, unknown, ProductReqBody>['body'], 'variants'>;
 
 export class ProductService {
   private productRepository: ProductModelRepository;
-  private skuRepository: ProductVariantModelRepository;
   private categoryRepository: CategoryModelRepository;
 
   constructor() {
     this.productRepository = new ProductModelRepository();
-    this.skuRepository = new ProductVariantModelRepository();
     this.categoryRepository = new CategoryModelRepository();
   }
 
@@ -49,14 +46,14 @@ export class ProductService {
     const deletedProduct = await this.productRepository.destroyById(id);
     if (!deletedProduct) throw new NextError(StatusCodes.NOT_FOUND, 'Product not found!');
 
-    // TODO: delete all skus relate and all images
-    // for (const sku of deleteSkus) {
-    //   if (sku && sku?.images) {
-    //     const publicIds = sku.images.map((item) => item.publicId);
+    // TODO: delete all productVariants relate and all images, image save in mongo -> destroy both mongodb and cloudinary
+    // for (const productVariant of deleteProductVariants) {
+    //   if (productVariant && productVariant?.images) {
+    //     const publicIds = productVariant.images.map((item) => item.publicId);
     //     await cloudinaryProvider.deleteAssetArray(publicIds);
     //   }
     // }
 
-    return { deleteResult: 'Product and its Skus deleted successfully!' };
+    return { deleteResult: 'Product and its variants deleted successfully!' };
   }
 }

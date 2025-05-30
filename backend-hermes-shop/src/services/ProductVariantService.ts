@@ -2,29 +2,26 @@ import slug from 'slug';
 import { createImage } from '~/helpers/createImage';
 import type { ProductReqBody } from '~/models/productModel';
 import { cloudinaryProvider } from '~/providers/cloudinaryProvider';
-import { ProductModelRepository } from '~/repositories/implements/ProductModelRepository';
 import { ProductVariantModelRepository } from '~/repositories/implements/ProductVariantModelRepository';
 import type { MulterManyFile } from '~/types/requestMulter';
 
-export class SkuService {
-  private productRepository: ProductModelRepository;
-  private skuRepository: ProductVariantModelRepository;
+export class ProductVariantService {
+  private productVariantRepository: ProductVariantModelRepository;
 
   constructor() {
-    this.productRepository = new ProductModelRepository();
-    this.skuRepository = new ProductVariantModelRepository();
+    this.productVariantRepository = new ProductVariantModelRepository();
   }
 
   public getBySlugify(slugify: string) {
-    return this.skuRepository.findOneBySlugify(slugify);
+    return this.productVariantRepository.findOneBySlugify(slugify);
   }
 
-  public async createMany(productId: string, skus: ProductReqBody['skus']) {
-    return this.skuRepository.createMany(
-      skus.map((sku) => ({
-        ...sku,
+  public async createMany(productId: string, variants: ProductReqBody['variants']) {
+    return this.productVariantRepository.createMany(
+      variants.map((item) => ({
+        ...item,
         productId,
-        slugify: slug(sku.name),
+        slugify: slug(item.name),
       })),
     );
   }
@@ -34,9 +31,9 @@ export class SkuService {
       const buffers = files.map((item) => item.buffer);
       const uploadManyImageResult = await cloudinaryProvider.streamUploadArray(buffers, '/hermes-shop/products');
       const images = uploadManyImageResult.filter(Boolean).map((upload) => createImage(upload!));
-      return this.skuRepository.findOneAndUpdateById(id, { images });
+      return this.productVariantRepository.findOneAndUpdateById(id, { images });
     }
 
-    return this.skuRepository.findOneAndUpdateById(id, data);
+    return this.productVariantRepository.findOneAndUpdateById(id, data);
   }
 }

@@ -7,19 +7,19 @@ import validateDecorator from '~/decorators/validateDecorator';
 import { multerMiddleware } from '~/middlewares/multerMiddleware';
 import type { ProductReqBody } from '~/models/productModel';
 import { ProductService } from '~/services/ProductService';
-import { SkuService } from '~/services/SkuService';
+import { ProductVariantService } from '~/services/ProductVariantService';
 import { createProductValidate } from '~/validates/productValidate';
-import { skuValidate } from '~/validates/skuValidate';
+import { productVariantValidate } from '~/validates/productVariantValidate';
 
 @controllerDecorator('/v1/products')
 class ProductController extends Controller {
   private productService: ProductService;
-  private skuService: SkuService;
+  private productVariantService: ProductVariantService;
 
   constructor() {
     super();
     this.productService = new ProductService();
-    this.skuService = new SkuService();
+    this.productVariantService = new ProductVariantService();
   }
 
   @routeDecorator('get', '/all')
@@ -37,9 +37,9 @@ class ProductController extends Controller {
   @routeDecorator('post', '/new')
   @validateDecorator(createProductValidate)
   public async create(req: Request<unknown, unknown, ProductReqBody>, res: Response) {
-    const { skus, ...data } = req.body;
+    const { variants, ...data } = req.body;
     const createdProduct = (await this.productService.create(data))!;
-    const result = await this.skuService.createMany(createdProduct._id.toString(), skus);
+    const result = await this.productVariantService.createMany(createdProduct._id.toString(), variants);
 
     res.status(StatusCodes.CREATED).json(result);
   }
@@ -52,12 +52,12 @@ class ProductController extends Controller {
     res.status(StatusCodes.OK).json(updatedProduct);
   }
 
-  @routeDecorator('patch', '/sku/:id', multerMiddleware.array('images'))
-  @validateDecorator(skuValidate)
-  public async updateSku(req: Request, res: Response) {
-    const skuId = req.params.id;
-    const updatedSku = await this.skuService.update(skuId, req.body, req.files);
-    res.status(StatusCodes.OK).json(updatedSku);
+  @routeDecorator('patch', '/variant/:id', multerMiddleware.array('images'))
+  @validateDecorator(productVariantValidate)
+  public async updateProductVariant(req: Request, res: Response) {
+    const productVariantId = req.params.id;
+    const updatedProductVariant = await this.productVariantService.update(productVariantId, req.body, req.files);
+    res.status(StatusCodes.OK).json(updatedProductVariant);
   }
 
   @routeDecorator('delete', '/:id')

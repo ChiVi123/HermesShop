@@ -42,7 +42,7 @@ export type ProductReqBody = {
   categoryId: string;
   attrs: ProductAttr[];
   options: ProductOption[];
-  skus: { name: string; price: number; discountPrice: number; specs: { key: string; value: string }[] }[];
+  variants: { name: string; price: number; discountPrice: number; specs: { key: string; value: string }[] }[];
 };
 
 export type ProductModelProperties = keyof WithId<ProductModel>;
