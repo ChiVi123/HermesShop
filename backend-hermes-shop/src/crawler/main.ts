@@ -8,12 +8,7 @@ import AsyncExitHook from 'async-exit-hook';
 import readline from 'readline';
 import slug from 'slug';
 import { closeDB, connectDB } from '~/core/mongodb';
-import { PATH_SKU_JSON } from './constants';
 import { crawlCollection } from './crawl';
-import { uploadDataCrawled } from './mongodb';
-import type { SkuJSON } from './types';
-import { uploadImages } from './uploadImages';
-import { randomInt, readDataFromJsonFile, saveDataToJsonFile } from './utils';
 
 const LOGGING_APP_PREFIX = '[App]';
 const LOGGING_APP_ERROR_PREFIX = '[App Error]';
@@ -45,7 +40,7 @@ function startReadline(): void {
       case 'image':
         logging.info(LOGGING_APP_PREFIX, 'Starting upload image...');
 
-        await uploadSkuImages();
+        // await uploadSkuImages();
 
         break;
       case 'mongo':
@@ -56,7 +51,8 @@ function startReadline(): void {
             logging.info(LOGGING_APP_PREFIX, 'Mongodb connected');
           })
           .then(async () => {
-            await uploadDataCrawled();
+            // TODO: refactor upload to mongodb
+            // await uploadDataCrawled();
 
             AsyncExitHook(() => {
               logging.info(LOGGING_APP_PREFIX, 'Exit');
@@ -91,17 +87,18 @@ function startReadline(): void {
   });
 }
 
-async function uploadSkuImages() {
-  const skuJSON = readDataFromJsonFile<SkuJSON>(PATH_SKU_JSON) || {};
+// TODO: refactor upload image
+// async function uploadSkuImages() {
+//   const skuJSON = readDataFromJsonFile<ProductVariantJSON>(PATH_VARIANT_JSON) || {};
 
-  for (const skus of Object.values(skuJSON)) {
-    for (const sku of skus) {
-      sku.images = await uploadImages(sku.images);
-      sku.stock = randomInt(MIN_STOCK, MAX_STOCK + 1);
-    }
-  }
+//   for (const skus of Object.values(skuJSON)) {
+//     for (const sku of skus) {
+//       sku.images = await uploadImages(sku.images);
+//       sku.stock = randomInt(MIN_STOCK, MAX_STOCK + 1);
+//     }
+//   }
 
-  saveDataToJsonFile(PATH_SKU_JSON, skuJSON);
+//   saveDataToJsonFile(PATH_VARIANT_JSON, skuJSON);
 
-  logging.info(LOGGING_APP_PREFIX, 'Update sku data successfully');
-}
+//   logging.info(LOGGING_APP_PREFIX, 'Update sku data successfully');
+// }

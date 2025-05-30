@@ -26,5 +26,5 @@ export enum SKU_SELECTOR {
 }
 export const LOGGING_PREFIX = '[Crawl]';
 export const PATH_PRODUCT_JSON = './src/crawler/crawl-product.json';
-export const PATH_SKU_JSON = './src/crawler/crawl-sku.json';
+export const PATH_VARIANT_JSON = './src/crawler/crawl-variant.json';
 export const PATH_IMAGE_JSON = './src/crawler/crawl-image.json';
