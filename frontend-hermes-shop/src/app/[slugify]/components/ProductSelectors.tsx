@@ -1,34 +1,49 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useContext } from 'react';
 import { cn } from '~/lib/utils';
-
-interface Props {
-  variants: { color: string; images: { url: string }[]; sizes: { size: string; stock: number }[] }[];
-}
+import { productContext } from './ProductContext';
 
 const IMAGE_POS = 1;
 
-export default function ProductSelectors({ variants }: Props) {
-  const [color, setColor] = useState('');
+export default function ProductSelectors() {
+  const { current, variants, onChange } = useContext(productContext);
 
   return (
     <>
       <div className='mb-2'>
         <span className='text-lg font-bold'>Color: </span>
-        {color}
+        {current?.color}
       </div>
+
       <div className='grid grid-cols-6 gap-2 mb-6'>
         {variants.map((item) => (
           <span
             key={item.color}
             className={cn('block size-10 rounded-full overflow-hidden', {
-              'ring-2 ring-offset-2 ring-amber-800': item.color === color,
+              'ring-2 ring-offset-2 ring-amber-800': item?.color === current.color,
             })}
-            onClick={() => setColor(item.color)}
+            onClick={() => onChange(item)}
           >
-            <Image src={item.images[IMAGE_POS].url} alt={item.color} width={40} height={40} />
+            <Image src={item?.images[IMAGE_POS]?.url} alt={item?.color} width={40} height={40} />
+          </span>
+        ))}
+      </div>
+
+      <div className='mb-2'>
+        <span className='text-lg font-bold'>Select size: </span>
+      </div>
+
+      <div className='grid grid-cols-8 gap-2 mb-6'>
+        {current.sizes.map((item) => (
+          <span
+            key={item.size}
+            className={cn('flex items-center justify-center size-12 border border-border rounded-sm', {
+              // 'ring-2 ring-offset-2 ring-amber-800': item.color === variant.color,
+            })}
+          >
+            {item.size}
           </span>
         ))}
       </div>
