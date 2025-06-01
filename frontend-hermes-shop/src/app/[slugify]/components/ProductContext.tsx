@@ -20,6 +20,8 @@ interface Props {
   children: ReactNode;
 }
 
+const FIRST_VARIANT_INDEX = 0;
+
 const initial = { color: '', price: 0, discountPrice: 0, images: [], sizes: [] };
 
 export const productContext = createContext<VariantContext>({
@@ -29,7 +31,7 @@ export const productContext = createContext<VariantContext>({
 });
 
 export default function ProductContext({ variants, children }: Props) {
-  const [variant, setVariant] = useState<VariantItem>(initial);
+  const [variant, setVariant] = useState<VariantItem>(variants[FIRST_VARIANT_INDEX]);
 
   return (
     <productContext.Provider value={{ current: variant, variants, onChange: setVariant }}>

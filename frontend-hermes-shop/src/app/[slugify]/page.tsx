@@ -37,7 +37,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
 
   return (
     <>
-      <section className='grid grid-cols-12 gap-14 px-10 mt-12'>
+      <section className='grid grid-cols-12 gap-14 w-full px-10 mt-12'>
         <ProductContext variants={result?.variants}>
           <ProductImageSelect />
 
