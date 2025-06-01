@@ -1,46 +1,70 @@
 'use client';
 
-import Image from 'next/image';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import Image from '~/components/Image';
 import { cn } from '~/lib/utils';
+import { productContext, VariantItem } from './ProductContext';
 
-interface Props {
-  options: { key: string; type: string }[];
-  skus: { images: { url: string }[]; specs: { key: string; value: string }[] }[];
-}
+type Size = VariantItem['sizes'][0];
 
-const COLOR_POS = 0;
-const SIZE_POS = 1;
 const IMAGE_POS = 1;
+const SIZE_IMAGE_ITEM = 48;
 
-export default function ProductSelectors({ options, skus }: Props) {
-  const [color, setColor] = useState('');
-
-  const selectorName = options[COLOR_POS].key;
-  const selector = skus.reduce((prev, current) => {
-    const specify = current.specs.find((spec) => spec.key === selectorName);
-    if (specify && !prev.some((item) => item.value === specify.value)) {
-      prev.push({ value: specify.value, url: current.images[IMAGE_POS].url });
-    }
-    return prev;
-  }, [] as { value: string; url: string }[]);
+export default function ProductSelectors() {
+  const { current, variants, onChange } = useContext(productContext);
+  const [currentSize, setCurrentSize] = useState<Size>(current.sizes[0]);
 
   return (
     <>
       <div className='mb-2'>
         <span className='text-lg font-bold'>Color: </span>
-        {color}
+        {current?.color}
       </div>
-      <div className='grid grid-cols-6 gap-2 mb-6'>
-        {selector.map((item) => (
-          <span
-            key={item.value}
-            className={cn('block size-10 rounded-full overflow-hidden', {
-              'ring-2 ring-offset-2 ring-amber-800': item.value === color,
-            })}
-            onClick={() => setColor(item.value)}
+
+      <div className='grid grid-cols-6 gap-y-4 mb-6'>
+        {variants.map((item) => (
+          <div
+            key={item.color}
+            className={cn(
+              'size-12 bg-accent rounded-full ring-transparent ring-2 ring-offset-2 overflow-hidden cursor-pointer hover:ring-accent',
+              {
+                '!ring-amber-800': item?.color === current.color,
+              }
+            )}
+            onClick={() => onChange(item)}
           >
-            <Image src={item.url} alt={item.value} width={40} height={40} />
+            <Image
+              src={item?.images[IMAGE_POS]?.url}
+              alt={item?.color}
+              width={SIZE_IMAGE_ITEM}
+              height={SIZE_IMAGE_ITEM}
+            />
+          </div>
+        ))}
+      </div>
+
+      <div className='mb-2'>
+        <span className='text-lg font-bold'>Select size: </span>
+      </div>
+
+      {/* TODO: active if size was chose */}
+      <div className='grid grid-cols-8 gap-2 mb-6'>
+        {current.sizes.map((item) => (
+          <span
+            key={item.size}
+            data-state='inOfStock'
+            className={cn(
+              'relative flex items-center justify-center size-12 border rounded-sm text-sm cursor-pointer select-none',
+              {
+                'before:absolute before:inset-0 before:content-[""] before:block before:bg-[url(/images/out_of_stock.png)] before:invert':
+                  !item.stock,
+                'hover:data-[state=inOfStock]:bg-accent': item.size !== currentSize.size,
+                'bg-accent-foreground text-white': item.size === currentSize.size,
+              }
+            )}
+            onClick={() => setCurrentSize(item)}
+          >
+            {item.size}
           </span>
         ))}
       </div>

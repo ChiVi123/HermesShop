@@ -1,54 +1,79 @@
 'use client';
 
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import Image from '~/components/Image';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from '~/components/ui/carousel';
 import { cn } from '~/lib/utils';
+import { productContext } from './ProductContext';
 
-type ImageItem = {
-  publicId: string;
-  url: string;
-  width: number;
-  height: number;
-};
+const SIZE_IMAGE_CAROUSEL_BUTTON = 62;
+const SIZE_IMAGE_CAROUSEL_ITEM = 575;
 
-interface Props {
-  images: ImageItem[];
-  className?: string;
-}
-
-export default function ProductImageSelect({ images, className }: Props) {
-  const [image, setImage] = useState<ImageItem>(images[0]);
+export default function ProductImageSelect() {
+  const { current: variant } = useContext(productContext);
+  const [api, setApi] = useState<CarouselApi>();
+  const [imageIndex, setImageIndex] = useState(1);
 
   useEffect(() => {
-    setImage(images[0]);
-  }, [images]);
+    if (!api) return;
+
+    api.on('select', () => {
+      setImageIndex(api.selectedScrollSnap() + 1);
+    });
+  }, [api]);
+
+  const handleThumbClick = useCallback(
+    (index: number) => {
+      api?.scrollTo(index);
+    },
+    [api]
+  );
 
   return (
-    <div className={cn('col-span-7 flex gap-6', className)}>
-      <div className='flex flex-col gap-1.5'>
-        {images.map((item) => (
-          <Image
-            key={item.publicId}
-            src={item.url}
-            alt={item.publicId}
-            width={62}
-            height={62}
-            className={cn({ 'ring-ring ring-2': image.publicId === item.publicId })}
-            onClick={() => setImage(item)}
-          />
-        ))}
-      </div>
+    <div className='sticky top-0 flex self-start col-span-7'>
+      <Carousel orientation='vertical' className='flex-1'>
+        <CarouselContent>
+          {variant.images.map((item, index) => (
+            <CarouselItem key={item.publicId} onClick={() => handleThumbClick(index)}>
+              <div className='m-2'>
+                <Image
+                  src={item?.url}
+                  alt={item?.publicId}
+                  width={SIZE_IMAGE_CAROUSEL_BUTTON}
+                  height={SIZE_IMAGE_CAROUSEL_BUTTON}
+                  className={cn('mx-auto ring-ring cursor-pointer', { 'ring-4': index + 1 === imageIndex })}
+                />
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
 
-      <div className='bg-accent size-full aspect-square'>
-        <Image
-          key={image.publicId}
-          src={image.url}
-          alt={image.publicId}
-          width={575}
-          height={575}
-          className='size-full'
-        />
-      </div>
+      <Carousel setApi={setApi} opts={{ loop: true }} className='flex-[0_1_85.56548%]'>
+        <CarouselContent>
+          {variant.images.map((item) => (
+            <CarouselItem key={item.publicId}>
+              <Image
+                src={item?.url}
+                alt={item?.publicId ?? ''}
+                width={SIZE_IMAGE_CAROUSEL_ITEM}
+                height={SIZE_IMAGE_CAROUSEL_ITEM}
+              />
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+
+        {/* Button */}
+        <CarouselPrevious className='top-[96%] left-[86%] -translate-full cursor-pointer' />
+        <CarouselNext className='top-[96%] right-3/50 -translate-y-full cursor-pointer' />
+      </Carousel>
     </div>
   );
 }
