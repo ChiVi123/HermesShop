@@ -60,7 +60,16 @@ const AGGREGATE_PRODUCT_DEFAULT = [
     $lookup: {
       from: COLLECTION_NAME_KEYS.IMAGES,
       let: { imageIds: '$variants.imageIds' },
-      pipeline: [{ $match: { $expr: { $in: ['$_id', '$$imageIds'] } } }],
+      pipeline: [
+        { $match: { $expr: { $in: ['$_id', '$$imageIds'] } } },
+        {
+          $addFields: {
+            sortIndex: { $indexOfArray: ['$$imageIds', '$_id'] },
+          },
+        },
+        { $sort: { sortIndex: 1 } },
+        { $project: { sortIndex: 0 } },
+      ],
       as: 'variants.images',
     },
   },
