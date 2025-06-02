@@ -7,7 +7,7 @@ import { productContext, VariantItem } from './ProductContext';
 
 type Size = VariantItem['sizes'][0];
 
-const IMAGE_POS = 1;
+const FIRST_IMAGE_INDEX = 0;
 const SIZE_IMAGE_ITEM = 48;
 
 export default function ProductSelectors() {
@@ -26,15 +26,16 @@ export default function ProductSelectors() {
           <div
             key={item.color}
             className={cn(
-              'size-12 bg-accent rounded-full ring-transparent ring-2 ring-offset-2 overflow-hidden cursor-pointer hover:ring-accent',
+              'size-12 bg-accent rounded-full ring-2 ring-offset-2 ring-transparent overflow-hidden cursor-pointer',
               {
-                '!ring-amber-800': item?.color === current.color,
+                'hover:ring-accent': item?.color !== current.color,
+                'ring-amber-800': item?.color === current.color,
               }
             )}
             onClick={() => onChange(item)}
           >
             <Image
-              src={item?.images[IMAGE_POS]?.url}
+              src={item?.images[FIRST_IMAGE_INDEX]?.url}
               alt={item?.color}
               width={SIZE_IMAGE_ITEM}
               height={SIZE_IMAGE_ITEM}
