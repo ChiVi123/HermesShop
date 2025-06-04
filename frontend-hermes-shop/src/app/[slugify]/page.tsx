@@ -10,6 +10,8 @@ import {
   BreadcrumbSeparator,
 } from '~/components/ui/breadcrumb';
 import { Button } from '~/components/ui/button';
+import { apiClient } from '~/lib/helpers';
+import { Product } from '~/types/product';
 import ProductContext from './components/ProductContext';
 import ProductImageSelect from './components/ProductImageSelect';
 import ProductPrice from './components/ProductPrice';
@@ -21,24 +23,22 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slugify } = await params;
-  const serverApi = process.env.SERVER_API ? process.env.SERVER_API + `/v1/products/${slugify}` : '/api';
-  const result = await fetch(serverApi).then((data) => data.json());
+  const product = await apiClient.get<Product>(`/v1/products/${slugify}`);
 
   return {
-    title: result.name,
-    description: result.shortDescription,
+    title: product.name,
+    description: product.shortDescription,
   };
 }
 
 export default async function ProductDetailsPage({ params }: { params: Promise<{ slugify: string }> }) {
   const { slugify } = await params;
-  const serverApi = process.env.SERVER_API ? process.env.SERVER_API + `/v1/products/${slugify}` : '/api';
-  const result = await fetch(serverApi).then((data) => data.json());
+  const product = await apiClient.get<Product>(`/v1/products/${slugify}`);
 
   return (
     <>
       <section className='grid grid-cols-12 gap-14 w-full px-10 mt-12'>
-        <ProductContext variants={result?.variants}>
+        <ProductContext variants={product?.variants}>
           <ProductImageSelect />
 
           <div className='col-span-5'>
@@ -54,7 +54,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
 
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link href={`/c/${result?.category.slugify}`}>{result?.category.name}</Link>
+                    <Link href={`/c/${product?.category.slugify}`}>{product?.category.name}</Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
               </BreadcrumbList>
@@ -62,8 +62,8 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
 
             {/* Basic */}
             <div className='mb-8 space-y-2'>
-              <h1 className='text-3xl font-extrabold'>{result?.name}</h1>
-              <p>{result?.shortDescription}</p>
+              <h1 className='text-3xl font-extrabold'>{product?.name}</h1>
+              <p>{product?.shortDescription}</p>
 
               <ProductPrice />
 
@@ -88,7 +88,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
                   <StarHalfIcon fill='currentColor' strokeWidth={0} size={16} className='text-accent-foreground' />
                 </div>
 
-                <span className='leading-none'>({result?.rating})</span>
+                <span className='leading-none'>({product?.rating})</span>
               </div>
             </div>
 
@@ -105,7 +105,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
 
       <section className='px-10 mt-12'>
         <Accordion type='single' collapsible className='w-full'>
-          {result?.attrs.map(({ key, value }) => (
+          {product?.attrs.map(({ key, value }) => (
             <AccordionItem key={key} value={key}>
               <AccordionTrigger className='text-xl font-bold'>{key}</AccordionTrigger>
               <AccordionContent>
