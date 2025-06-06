@@ -1,21 +1,31 @@
+import { cloneDeep, omit } from 'lodash';
+import { resolver } from './resolver';
 import { FetchClient } from './types';
 
 export const core: FetchClient = {
   baseUrl: '',
   options: {},
-  async get(pathname, options) {
-    return (await fetch(this.baseUrl + pathname, Object.assign({ method: 'get' }, this.options, options))).json();
+  catchers: new Map(),
+  request(method, pathname, options) {
+    const newOptions = Object.assign({ method }, this.options, omit(options, 'params'));
+    const fetchClientCloned = cloneDeep(this);
+
+    fetchClientCloned.options = newOptions;
+    return resolver(pathname, fetchClientCloned);
   },
-  async post(pathname, options) {
-    return (await fetch(this.baseUrl + pathname, Object.assign({ method: 'post' }, this.options, options))).json();
+  get(pathname, options) {
+    return this.request('GET', pathname, options);
   },
-  async put(pathname, options) {
-    return (await fetch(this.baseUrl + pathname, Object.assign({ method: 'put' }, this.options, options))).json();
+  post(pathname, options) {
+    return this.request('POST', pathname, options);
   },
-  async patch(pathname, options) {
-    return (await fetch(this.baseUrl + pathname, Object.assign({ method: 'patch' }, this.options, options))).json();
+  put(pathname, options) {
+    return this.request('PUT', pathname, options);
   },
-  async delete(pathname, options) {
-    return (await fetch(this.baseUrl + pathname, Object.assign({ method: 'delete' }, this.options, options))).json();
+  patch(pathname, options) {
+    return this.request('PATCH', pathname, options);
+  },
+  delete(pathname, options) {
+    return this.request('DELETE', pathname, options);
   },
 };

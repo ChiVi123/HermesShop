@@ -26,7 +26,7 @@ const SLIDES = [
 const FIRST_IMAGE_INDEX = 0;
 
 export default async function Home() {
-  const products = await apiClient.get<ProductItem[]>('/v1/products/all');
+  const products = await apiClient.get('/v1/products/all').fetchError().json<ProductItem[]>();
 
   return (
     <div className='my-12'>

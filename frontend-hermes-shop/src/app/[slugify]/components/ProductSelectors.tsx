@@ -12,7 +12,7 @@ const SIZE_IMAGE_ITEM = 48;
 
 export default function ProductSelectors() {
   const { current, variants, onChange } = useContext(productContext);
-  const [currentSize, setCurrentSize] = useState<Size>(current.sizes[0]);
+  const [currentSize, setCurrentSize] = useState<Size | undefined>(current?.sizes[0]);
 
   return (
     <>
@@ -50,7 +50,7 @@ export default function ProductSelectors() {
 
       {/* TODO: active if size was chose */}
       <div className='grid grid-cols-8 gap-2 mb-6'>
-        {current.sizes.map((item) => (
+        {current?.sizes?.map((item) => (
           <span
             key={item.size}
             data-state='inOfStock'
@@ -59,8 +59,8 @@ export default function ProductSelectors() {
               {
                 'before:absolute before:inset-0 before:content-[""] before:block before:bg-[url(/images/out_of_stock.png)] before:invert':
                   !item.stock,
-                'hover:data-[state=inOfStock]:bg-accent': item.size !== currentSize.size,
-                'bg-accent-foreground text-white': item.size === currentSize.size,
+                'hover:data-[state=inOfStock]:bg-accent': item.size !== currentSize?.size,
+                'bg-accent-foreground text-white': item.size === currentSize?.size,
               }
             )}
             onClick={() => setCurrentSize(item)}
