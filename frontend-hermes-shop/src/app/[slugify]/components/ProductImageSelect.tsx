@@ -40,7 +40,7 @@ export default function ProductImageSelect() {
     <div className='sticky top-0 flex self-start col-span-7'>
       <Carousel orientation='vertical' className='flex-1'>
         <CarouselContent>
-          {variant.images.map((item, index) => (
+          {variant?.images?.map((item, index) => (
             <CarouselItem key={item.publicId} onClick={() => handleThumbClick(index)}>
               <div className='m-2'>
                 <Image
@@ -58,7 +58,7 @@ export default function ProductImageSelect() {
 
       <Carousel setApi={setApi} opts={{ loop: true }} className='flex-[0_1_85.56548%]'>
         <CarouselContent>
-          {variant.images.map((item) => (
+          {variant?.images?.map((item) => (
             <CarouselItem key={item.publicId}>
               <Image
                 src={item?.url}

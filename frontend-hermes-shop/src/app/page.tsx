@@ -2,7 +2,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '~/components/ui/carousel';
+import { apiClient } from '~/lib/helpers';
 import { cn } from '~/lib/utils';
+import { ProductItem } from '~/types/product';
 
 const SLIDES = [
   {
@@ -24,8 +26,7 @@ const SLIDES = [
 const FIRST_IMAGE_INDEX = 0;
 
 export default async function Home() {
-  const serverApi = process.env.SERVER_API ? process.env.SERVER_API + '/v1/products/all' : '/api';
-  const result = await fetch(serverApi).then((data) => data.json());
+  const products = await apiClient.get('/v1/products/all').fetchError().json<ProductItem[]>();
 
   return (
     <div className='my-12'>
@@ -70,9 +71,9 @@ export default async function Home() {
             </div>
           </div>
 
-          {Array.isArray(result) && (
+          {Array.isArray(products) && (
             <div className='grid grid-cols-2 gap-2'>
-              {result.slice(0, 4).map(({ _id, name, variant }) => (
+              {products.slice(0, 4).map(({ _id, name, variant }) => (
                 <div key={_id} className='bg-accent'>
                   <div className='mb-2 overflow-hidden group'>
                     <Image
@@ -103,10 +104,10 @@ export default async function Home() {
       <section>
         <h2 className='px-10 mb-8 text-xl font-bold'>More To Shop</h2>
 
-        {Array.isArray(result) && (
+        {Array.isArray(products) && (
           <Carousel opts={{ align: 'start', loop: true }} className='[&_>_div]:px-10'>
             <CarouselContent className='-ml-2'>
-              {result.map(({ _id, name, slugify, variant }) => (
+              {products.map(({ _id, name, slugify, variant }) => (
                 <CarouselItem key={_id} className='basis-1/4 pl-2'>
                   <Link href={`/${slugify}`} className='h-full'>
                     <Card className='gap-4 py-0 h-full border-0 rounded-none shadow-none group'>
@@ -128,10 +129,10 @@ export default async function Home() {
                       </CardHeader>
 
                       <CardContent className='flex items-center gap-1 px-0 font-semibold'>
-                        {variant.value > variant.discountPrice && (
+                        {variant.price > variant.discountPrice && (
                           <span className='text-red-800'>${variant.discountPrice}</span>
                         )}
-                        <span className={cn({ 'line-through': variant.value > variant.discountPrice })}>
+                        <span className={cn({ 'line-through': variant.price > variant.discountPrice })}>
                           ${variant.price}
                         </span>
                       </CardContent>

@@ -8,22 +8,21 @@ type Props = {
   className?: string;
 };
 export default function ProductPrice({ className }: Props) {
-  const {
-    current: { price, discountPrice },
-  } = useContext(productContext);
+  const { current } = useContext(productContext);
+  const isDiscount = current?.discountPrice < current?.price;
 
   return (
     <div
       className={cn(
         'flex gap-2 [&_[data-name]]:text-lg [&_[data-name="discountPrice"]]:text-red-800',
         {
-          '[&_[data-name="price"]]:text-muted-foreground [&_[data-name="price"]]:line-through': discountPrice < price,
+          '[&_[data-name="price"]]:text-muted-foreground [&_[data-name="price"]]:line-through': isDiscount,
         },
         className
       )}
     >
-      {discountPrice < price && <span data-name='discountPrice'>${discountPrice}</span>}
-      <span data-name='price'>${price}</span>
+      {isDiscount && <span data-name='discountPrice'>${current?.discountPrice}</span>}
+      <span data-name='price'>${current?.price}</span>
     </div>
   );
 }
