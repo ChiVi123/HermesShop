@@ -1,5 +1,5 @@
 import { ResponseError } from '~/types/responseError';
-import { StatusCodes } from './constants';
+import { StatusCodes } from './StatusCodes';
 
 export class FetchClientError extends Error {
   public status: StatusCodes;

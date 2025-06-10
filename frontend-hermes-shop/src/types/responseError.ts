@@ -1,4 +1,4 @@
-import { StatusCodes } from '~/lib/fetchClient/constants';
+import { StatusCodes } from '~/lib/fetchClient/StatusCodes';
 
 export interface ResponseError {
   statusCode: StatusCodes;
