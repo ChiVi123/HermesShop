@@ -17,12 +17,14 @@ export class FetchClientResolver {
   }
 
   public set response(responsePromise: Promise<Response>) {
-    const promise = responsePromise.then((res) => {
-      if (!this._fetchClient) throw Error(MESSAGE_RESPONSE_ERROR);
-      return handleResponseInterceptors(res, this._fetchClient?.interceptors.response.handlers);
-    });
+    if (!this._fetchClient) {
+      throw Error(MESSAGE_RESPONSE_ERROR);
+    }
 
-    this._responsePromise = promise;
+    this._responsePromise = handleResponseInterceptors(
+      responsePromise,
+      this._fetchClient.interceptors.response.handlers
+    );
   }
 
   public badRequest(callback: FetchClientErrorHandler): this {
@@ -83,6 +85,7 @@ export class FetchClientResolver {
       const error = reason[FETCH_ERROR];
       const catcher = this._fetchClient.catchers.get(error.status) ?? this._fetchClient.catchers.get(FETCH_ERROR);
       if (!catcher) throw error;
+
       return catcher(error, this._fetchClient);
     }
   }
