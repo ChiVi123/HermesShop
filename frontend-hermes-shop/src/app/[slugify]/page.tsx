@@ -27,6 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const result = await apiClient.get(`/v1/products/${slugify}`).fetchError().json<Product>();
 
   if (result instanceof FetchClientError) return { title: result.json?.message, description: '' };
+  if (result instanceof Error) return { title: result.message };
 
   return {
     title: result.name,
@@ -40,6 +41,9 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
 
   if (result instanceof FetchClientError) {
     return <div className='px-10 mt-12'>{result.json?.message}</div>;
+  }
+  if (result instanceof Error) {
+    return <div className='px-10 mt-12'>{result.message}</div>;
   }
 
   return (

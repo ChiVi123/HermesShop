@@ -5,7 +5,7 @@ export function handleRequestInterceptors(
   handlers: (RejectedHandler | FulfilledHandler<RequestOptions>)[]
 ): Promise<RequestOptions> {
   const length = handlers.length;
-  const promise = new Promise<RequestOptions>((resolve) => {
+  let promise = new Promise<RequestOptions>((resolve) => {
     resolve(options);
   });
 
@@ -15,7 +15,7 @@ export function handleRequestInterceptors(
     const onFulfilled: FulfilledHandler<RequestOptions> = handlers[index++];
     const onRejected: RejectedHandler = handlers[index++];
 
-    promise.then(onFulfilled).catch(onRejected);
+    promise = promise.then(onFulfilled).catch(onRejected);
   }
 
   return promise;
