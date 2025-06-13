@@ -8,6 +8,7 @@ export const apiClient = new FetchClient(baseUrl);
 
 apiClient.interceptors.request.use(
   async (config) => {
+    // throw new Error('throw from request');
     console.log('interceptors.request onFulfilled');
     // if (isServer()) {
     //   const cookie = (await cookies()).get('__next_hmr_refresh_hash__');

@@ -78,13 +78,12 @@ export class FetchClient {
 
   private request(method: FetchClientMethod, pathname: string, options?: RequestOptions): FetchClientResolver {
     const fetchClientCloned = new FetchClient(this, options, method);
-
     const responsePromise = handleRequestInterceptors(
       fetchClientCloned.options,
       fetchClientCloned._interceptors.request.handlers
-    ).then((config) =>
-      fetch(fetchClientCloned.baseUrl + pathname, config)
-        .then((res) => {
+    )
+      .then((config) =>
+        fetch(fetchClientCloned.baseUrl + pathname, config).then((res) => {
           if (res.ok) return res;
 
           return res.text().then((value) => {
@@ -98,10 +97,10 @@ export class FetchClient {
             throw new FetchClientError(ERROR_MESSAGE, res.status, pathname, json);
           });
         })
-        .catch((error) => {
-          throw { [FETCH_ERROR]: error };
-        })
-    );
+      )
+      .catch((error) => {
+        throw { [FETCH_ERROR]: error };
+      });
 
     fetchClientResolver.fetchClient = fetchClientCloned;
     fetchClientResolver.response = responsePromise;
