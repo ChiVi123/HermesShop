@@ -51,7 +51,7 @@ class AuthController extends Controller {
   }
 
   @routeDecorator('delete', '/logout')
-  async logout(req: Request, res: Response) {
+  async logout(_req: Request, res: Response) {
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
     res.status(StatusCodes.OK).json({ loggedOut: true });
