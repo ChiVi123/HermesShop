@@ -9,6 +9,9 @@ import type { UserReqBody } from '~/models/userModel';
 import { jwtProvider } from '~/providers/jwtProvider';
 import { UserModelRepository } from '~/repositories/implements/UserModelRepository';
 
+const SALT_LENGTH = 8;
+const EMAIL_SEPARATOR = '@';
+
 export class AuthService {
   private userRepository: UserModelRepository;
 
@@ -40,11 +43,12 @@ export class AuthService {
     const existUser = await this.userRepository.findOneByEmail(email);
     if (existUser) throw new NextError(StatusCodes.CONFLICT, 'Email already exists!');
 
+    const nameSplit = email.split(EMAIL_SEPARATOR).shift();
     const userData = {
       email,
-      displayName: email.split('@')[0],
-      username: email.split('@')[0],
-      password: bcryptjs.hashSync(password, 8),
+      displayName: nameSplit,
+      username: nameSplit,
+      password: bcryptjs.hashSync(password, SALT_LENGTH),
     };
     const insertedOneResult = await this.userRepository.insertOne(userData);
     const userCreated = (await this.userRepository.findOneById(insertedOneResult.insertedId))!;
@@ -72,7 +76,7 @@ export class AuthService {
       payload: userInfo,
       secretSignature: env.REFRESH_TOKEN_SECRET_SIGNATURE,
       // tokenLife: env.REFRESH_TOKEN_LIFE,
-      tokenLife: '15s',
+      tokenLife: '30s',
     });
 
     return { accessToken, refreshToken, ...pickUser(existUser) };

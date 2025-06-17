@@ -1,5 +1,5 @@
 import type { Express } from 'express';
-import { securityPathConfig } from '~/configs/cors';
+import { securityPathMap } from '~/configs/cors';
 import { METADATA_KEYS } from '~/configs/keys';
 import type Controller from '~/controllers/Controller';
 import authMiddleware from '~/middlewares/authMiddleware';
@@ -18,9 +18,12 @@ function defineRoutes(controllers: (typeof Controller)[], application: Express) 
         // like properties or methods
         let completeHandlers = handlers.map((fn) => fn.bind(controller));
 
-        securityPathConfig.forEach((regexPath) => {
-          if (regexPath.test(completePath)) completeHandlers = [authMiddleware, ...completeHandlers];
-        });
+        if (securityPathMap.has(method)) {
+          const paths = securityPathMap.get(method) ?? [];
+          paths.forEach((regex) => {
+            if (regex.test(completePath)) completeHandlers = [authMiddleware, ...completeHandlers];
+          });
+        }
 
         application[method](completePath, completeHandlers);
       }
