@@ -3,7 +3,13 @@ import { CONTENT_TYPE_JSON, ERROR_MESSAGE, FETCH_ERROR, HEADER_CONTENT_TYPE } fr
 import { FetchClientError } from './FetchClientError';
 import { FetchClientResolver, fetchClientResolver } from './fetchClientResolver';
 import { InterceptorManager } from './InterceptorManager';
-import { FetchClientCodeError, FetchClientErrorHandler, FetchClientMethod, RequestOptions } from './types';
+import {
+  FetchClientCodeError,
+  FetchClientErrorHandler,
+  FetchClientMethod,
+  FetchClientRetry,
+  RequestOptions,
+} from './types';
 import { handleRequestInterceptors } from './utils';
 
 type Interceptors<T> = {
@@ -56,6 +62,13 @@ export class FetchClient {
     return this._interceptors;
   }
 
+  public setCookie(cookies: string): FetchClient {
+    const headers = new Headers(this.options.headers);
+    headers.set('Cookie', cookies);
+    merge(this.options, { headers });
+    return this;
+  }
+
   public get(pathname: string, options?: RequestOptions): FetchClientResolver {
     return this.request('GET', pathname, options);
   }
@@ -76,28 +89,18 @@ export class FetchClient {
     return this.request('DELETE', pathname, options);
   }
 
+  public retry(pathname: string, clientRetry: FetchClientRetry) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.request((clientRetry.options as any).method, pathname, clientRetry.options);
+  }
+
   private request(method: FetchClientMethod, pathname: string, options?: RequestOptions): FetchClientResolver {
     const fetchClientCloned = new FetchClient(this, options, method);
     const responsePromise = handleRequestInterceptors(
       fetchClientCloned.options,
       fetchClientCloned._interceptors.request.handlers
     )
-      .then((config) =>
-        fetch(fetchClientCloned.baseUrl + pathname, config).then((res) => {
-          if (res.ok) return res;
-
-          return res.text().then((value) => {
-            const headerValue = res.headers.get(HEADER_CONTENT_TYPE);
-            let json = null;
-
-            if (headerValue && headerValue.includes(CONTENT_TYPE_JSON)) {
-              json = JSON.parse(value);
-            }
-
-            throw new FetchClientError(ERROR_MESSAGE, res.status, pathname, json);
-          });
-        })
-      )
+      .then((config) => this.fetching(fetchClientCloned.baseUrl, pathname, config))
       .catch((error) => {
         throw { [FETCH_ERROR]: error };
       });
@@ -106,5 +109,18 @@ export class FetchClient {
     fetchClientResolver.response = responsePromise;
 
     return fetchClientResolver;
+  }
+
+  private async fetching(baseUrl: string, pathname: string, options: RequestOptions) {
+    const res = await fetch(baseUrl + pathname, options);
+    if (res.ok) return res;
+
+    const value = await res.text();
+    const headerValue = res.headers.get(HEADER_CONTENT_TYPE);
+    let json = null;
+    if (headerValue && headerValue.includes(CONTENT_TYPE_JSON)) {
+      json = JSON.parse(value);
+    }
+    throw new FetchClientError(ERROR_MESSAGE, res.status, pathname, { baseUrl, options }, json);
   }
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Nunito_Sans } from 'next/font/google';
+import { AuthProvider } from '~/context/AuthProvider';
 import './globals.css';
 
 const nunitoSans = Nunito_Sans({
@@ -16,7 +17,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang='en'>
-      <body className={`${nunitoSans.variable} antialiased`}>{children}</body>
+      <body className={`${nunitoSans.variable} antialiased`}>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

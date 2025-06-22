@@ -11,7 +11,7 @@ import {
 } from '~/components/ui/breadcrumb';
 import { Button } from '~/components/ui/button';
 import { FetchClientError } from '~/lib/fetchClient/FetchClientError';
-import { apiClient } from '~/lib/helpers';
+import { apiClient } from '~/lib/helpers/apiClient';
 import { Product } from '~/types/product';
 import ProductContext from './components/ProductContext';
 import ProductImageSelect from './components/ProductImageSelect';

@@ -1,6 +1,9 @@
 import { CircleAlertIcon, PlusIcon } from 'lucide-react';
+import picocolors from 'picocolors';
 import { Alert, AlertTitle } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
+import { getCookiesString } from '~/lib/helpers/cookies';
+import { getUserInfo } from '~/services/users';
 import EditProfileForm from './components/EditProfileForm';
 
 const ADDRESSES = [
@@ -55,7 +58,12 @@ const ADDRESSES = [
   },
 ];
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
+  const cookieHeader = await getCookiesString();
+  const user = await getUserInfo(cookieHeader);
+
+  console.log(picocolors.magenta('user'), user);
+
   return (
     <main className='min-h-screen pt-6 bg-accent'>
       <h1 className='max-w-5xl mx-auto mb-8 px-7 text-xl font-bold'>Profile</h1>
