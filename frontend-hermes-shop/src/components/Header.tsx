@@ -31,7 +31,9 @@ export default function Header() {
 
           <div className='flex items-center gap-4'>
             <SearchIcon />
-            <UserIcon />
+            <Link href='/login'>
+              <UserIcon />
+            </Link>
             <ShoppingCartIcon />
           </div>
         </div>

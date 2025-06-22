@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '~/components/ui/carousel';
-import { apiClient } from '~/lib/helpers';
+import { apiClient } from '~/lib/helpers/apiClient';
 import { cn } from '~/lib/utils';
 import { ProductItem } from '~/types/product';
 
