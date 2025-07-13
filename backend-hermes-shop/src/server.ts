@@ -46,9 +46,10 @@ const startServer = () => {
     );
   });
 
-  AsyncExitHook(() => {
+  AsyncExitHook(async (hook) => {
     logging.info(`${PREFIX_APP_LOG} Exit`);
-    closeDB();
+    await closeDB();
+    hook();
   });
 };
 

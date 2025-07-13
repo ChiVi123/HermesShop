@@ -14,4 +14,5 @@ export const getDB = () => {
 };
 export const closeDB = async () => {
   await mongoClientInstance.close();
+  logging.info('Mongodb connection closed');
 };

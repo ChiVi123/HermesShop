@@ -29,7 +29,7 @@ export class AuthService {
         payload: userInfo,
         secretSignature: env.ACCESS_TOKEN_SECRET_SIGNATURE,
         // tokenLife: env.ACCESS_TOKEN_LIFE,
-        tokenLife: '5s',
+        tokenLife: '30s',
       });
       return { accessToken };
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -70,15 +70,15 @@ export class AuthService {
       payload: userInfo,
       secretSignature: env.ACCESS_TOKEN_SECRET_SIGNATURE,
       // tokenLife: env.ACCESS_TOKEN_LIFE,
-      tokenLife: '5s',
+      tokenLife: '30s',
     });
     const refreshToken = jwtProvider.generateToken({
       payload: userInfo,
       secretSignature: env.REFRESH_TOKEN_SECRET_SIGNATURE,
       // tokenLife: env.REFRESH_TOKEN_LIFE,
-      tokenLife: '30s',
+      tokenLife: '1m',
     });
 
-    return { accessToken, refreshToken, ...pickUser(existUser) };
+    return { accessToken, refreshToken };
   }
 }

@@ -5,13 +5,20 @@ import { StatusCodes } from '~/configs/statusCodes';
 import NextError from '~/helpers/nextError';
 import { jwtProvider } from '~/providers/jwtProvider';
 
-const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const clientAccessToken = req.cookies?.accessToken;
+const authMiddleware = (req: Request, _res: Response, next: NextFunction) => {
+  let accessToken: string | undefined | null = null;
 
-  if (!clientAccessToken) return next(new NextError(StatusCodes.UNAUTHORIZED, 'Unauthorized! (Token not found)'));
+  if (req.cookies && req.cookies.accessToken) {
+    accessToken = req.cookies.accessToken;
+  }
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    accessToken = req.headers.authorization.split(' ').pop();
+  }
+
+  if (!accessToken) return next(new NextError(StatusCodes.UNAUTHORIZED, 'Unauthorized! (Token not found)'));
 
   try {
-    const accessTokenDecoded = jwtProvider.verifyToken(clientAccessToken, env.ACCESS_TOKEN_SECRET_SIGNATURE);
+    const accessTokenDecoded = jwtProvider.verifyToken(accessToken, env.ACCESS_TOKEN_SECRET_SIGNATURE);
     req.jwtDecode = accessTokenDecoded as JwtPayload;
     next();
   } catch (error) {
