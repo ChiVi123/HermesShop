@@ -1,8 +1,7 @@
 'use client';
 
 import { Loader2Icon } from 'lucide-react';
-import pc from 'picocolors';
-import { useActionState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { login } from '~/actions/authActions';
 import { Button } from '~/components/ui/button';
 import { CardContent, CardFooter } from '~/components/ui/card';
@@ -11,9 +10,17 @@ import { Label } from '~/components/ui/label';
 import { Separator } from '~/components/ui/separator';
 
 export default function Form() {
-  const [state, action, pending] = useActionState(login, { errors: undefined, message: undefined });
+  const [, action, pending] = useActionState(login, { errors: undefined, message: '' });
+  const [formData, setFormData] = useState({ email: '', password: '' });
 
-  console.log(pc.green('state: '), state);
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      setFormData({
+        email: process.env.NEXT_PUBLIC_LOGIN_EMAIL ?? '',
+        password: process.env.NEXT_PUBLIC_LOGIN_PASSWORD ?? '',
+      });
+    }
+  }, []);
 
   return (
     <>
@@ -29,6 +36,7 @@ export default function Form() {
                 autoComplete='username'
                 placeholder='m@example.com'
                 required
+                defaultValue={formData.email}
               />
             </div>
             <div className='grid gap-2'>
@@ -38,7 +46,14 @@ export default function Form() {
                   Forgot your password?
                 </a>
               </div>
-              <Input id='password' type='password' name='password' autoComplete='current-password' required />
+              <Input
+                id='password'
+                type='password'
+                name='password'
+                autoComplete='current-password'
+                required
+                defaultValue={formData.password}
+              />
             </div>
           </div>
         </form>

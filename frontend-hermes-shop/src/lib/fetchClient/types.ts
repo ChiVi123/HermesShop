@@ -6,7 +6,13 @@ export type FetchClientCodeError = string | symbol | StatusCodes;
 export type FetchClientMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 export type FetchClientOptions = Omit<RequestInit, 'method'>;
 
-export type RequestOptions = FetchClientOptions & { params?: Record<string, string | number>; retry?: boolean };
+export type RequestOptions = FetchClientOptions & {
+  auth?: boolean;
+  params?: Record<string, string | number>;
+  cookies?: string;
+  data?: Record<string, unknown> | BodyInit;
+  retry?: boolean;
+};
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FetchClientErrorHandler = (error: FetchClientError, original: FetchClient) => any;
 

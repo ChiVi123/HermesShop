@@ -1,4 +1,4 @@
-import { ERROR_MESSAGE, FETCH_ERROR } from './constants';
+import { FETCH_ERROR } from './constants';
 import { FetchClient } from './FetchClient';
 import { FetchClientError } from './FetchClientError';
 import { StatusCodes } from './StatusCodes';
@@ -82,15 +82,15 @@ export class FetchClientResolver {
       if (!reason || typeof reason !== 'object') throw reason;
       if (!(FETCH_ERROR in reason)) throw reason;
 
-      if (!(reason[FETCH_ERROR] instanceof FetchClientError)) {
-        return new Error(ERROR_MESSAGE);
-      } else {
-        const error = reason[FETCH_ERROR];
+      const error = reason[FETCH_ERROR];
+      if (error instanceof FetchClientError) {
         const catcher = this._fetchClient.catchers.get(error.status) ?? this._fetchClient.catchers.get(FETCH_ERROR);
         if (!catcher) throw error;
 
         return catcher(error, this._fetchClient);
       }
+
+      throw error;
     }
   }
 }

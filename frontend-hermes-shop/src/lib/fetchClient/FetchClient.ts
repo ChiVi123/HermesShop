@@ -62,13 +62,6 @@ export class FetchClient {
     return this._interceptors;
   }
 
-  public setCookie(cookies: string): FetchClient {
-    const headers = new Headers(this.options.headers);
-    headers.set('Cookie', cookies);
-    merge(this.options, { headers });
-    return this;
-  }
-
   public get(pathname: string, options?: RequestOptions): FetchClientResolver {
     return this.request('GET', pathname, options);
   }
@@ -95,6 +88,23 @@ export class FetchClient {
   }
 
   private request(method: FetchClientMethod, pathname: string, options?: RequestOptions): FetchClientResolver {
+    const headers = new Headers(this.options.headers);
+    if (options) {
+      options.headers = headers;
+    }
+
+    if (options?.cookies) {
+      headers.set('Cookie', options.cookies);
+    }
+    if (options?.data) {
+      if (typeof options.data === 'object' && !(options.data instanceof FormData)) {
+        headers.set(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON);
+        options.body = JSON.stringify(options.data);
+      } else {
+        options.body = options.data;
+      }
+    }
+
     const fetchClientCloned = new FetchClient(this, options, method);
     const responsePromise = handleRequestInterceptors(
       fetchClientCloned.options,

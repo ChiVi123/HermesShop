@@ -1,48 +1,60 @@
-import picocolors from 'picocolors';
+// import picocolors from 'picocolors';
+// import { FETCH_ERROR } from '~/lib/fetchClient/constants';
 import { FetchClient } from '~/lib/fetchClient/FetchClient';
-import { FetchClientError } from '~/lib/fetchClient/FetchClientError';
-import { StatusCodes } from '~/lib/fetchClient/StatusCodes';
-import { isServer } from '~/lib/utils';
-import { refreshToken } from '~/services/auth';
+// import { FetchClientError } from '~/lib/fetchClient/FetchClientError';
+// import { StatusCodes } from '~/lib/fetchClient/StatusCodes';
+// import { apiRoute } from '~/lib/helpers/apiRoute';
+// import { isServer } from '~/lib/utils';
+// import { refreshToken } from '~/services/auth';
 
-const baseUrl = process.env.SERVER_API ?? '';
+const baseUrl = process.env.NEXT_PUBLIC_SERVER_API ?? '';
 
 export const apiClient = new FetchClient(baseUrl);
 
-apiClient.interceptors.request.use(
-  async (config) => {
-    // throw new Error('throw from request');
-    config.credentials = !isServer() ? 'same-origin' : undefined;
-    return config;
-  },
-  (error) => {
-    console.log(picocolors.red('interceptors.request onRejected'));
-    return Promise.reject(error);
-  }
-);
-apiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    if (!(error instanceof FetchClientError)) return Promise.reject(error);
+// apiClient.interceptors.request.use(
+//   async (config) => {
+//     // throw new Error('throw from request');
 
-    const retryConfig = error.retryConfig;
-    const message = error.json?.message ?? error.message;
+//     config.credentials = !isServer() ? 'include' : undefined;
+//     return config;
+//   },
+//   (error) => {
+//     return Promise.reject(error);
+//   }
+// );
+// apiClient.interceptors.response.use(
+//   async (response) => response,
+//   async (error) => {
+//     const clientError = error[FETCH_ERROR];
+//     if (!clientError || !(clientError instanceof FetchClientError)) {
+//       return Promise.reject(error);
+//     }
 
-    console.log(picocolors.red('interceptors.response onRejected'), retryConfig);
+//     const retryConfig = clientError.retryConfig;
+//     const message = clientError.json?.message ?? clientError.message;
 
-    if (error.status !== StatusCodes.GONE) {
-      console.log(picocolors.red('interceptors.response onRejected'), message);
-      return Promise.reject(error);
-    }
-    if (retryConfig.options.retry) {
-      return Promise.reject(error);
-    }
+//     if (clientError.status !== StatusCodes.GONE) {
+//       console.log(picocolors.red('interceptors.response onRejected not status gone:'), clientError.status, message);
+//       return Promise.reject(error);
+//     }
+//     if (retryConfig.options.retry) {
+//       return Promise.reject(error);
+//     }
 
-    retryConfig.options.retry = true;
+//     const originUrl = isServer() ? process.env.BASE_URL : '';
 
-    return refreshToken().then((value) => {
-      if (value instanceof Error || value instanceof FetchClientError) return Promise.reject(value);
-      return apiClient.retry(error.url, retryConfig);
-    });
-  }
-);
+//     retryConfig.options.retry = true;
+
+//     return refreshToken().then(async (data) => {
+//       if (data instanceof Error) return Promise.reject(data);
+
+//       const refreshResponse = await apiRoute
+//         .post(originUrl + '/api/refresh-token', { data })
+//         .fetchError()
+//         .res();
+//       if (refreshResponse instanceof Error) return Promise.reject(refreshResponse);
+
+//       return apiClient.retry(clientError.url, retryConfig).fetchError().res();
+//     });
+//   }
+// );

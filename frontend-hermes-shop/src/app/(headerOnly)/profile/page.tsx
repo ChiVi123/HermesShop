@@ -1,7 +1,10 @@
 import { CircleAlertIcon, PlusIcon } from 'lucide-react';
-import picocolors from 'picocolors';
+import { redirect } from 'next/navigation';
 import { Alert, AlertTitle } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
+import { RoutePage } from '~/constants';
+import { FetchClientError } from '~/lib/fetchClient/FetchClientError';
+import { StatusCodes } from '~/lib/fetchClient/StatusCodes';
 import { getCookiesString } from '~/lib/helpers/cookies';
 import { getUserInfo } from '~/services/users';
 import EditProfileForm from './components/EditProfileForm';
@@ -62,7 +65,9 @@ export default async function ProfilePage() {
   const cookieHeader = await getCookiesString();
   const user = await getUserInfo(cookieHeader);
 
-  console.log(picocolors.magenta('user'), user);
+  if (user instanceof FetchClientError && user.status === StatusCodes.GONE) {
+    redirect(RoutePage.LOGOUT);
+  }
 
   return (
     <main className='min-h-screen pt-6 bg-accent'>
@@ -76,7 +81,7 @@ export default async function ProfilePage() {
 
           <div className='flex flex-col gap-y-1'>
             <span className='text-sm text-muted-foreground font-semibold'>Email</span>
-            <span className='text-sm font-semibold'>m@gmail.com</span>
+            <span className='text-sm font-semibold'>{user instanceof Error ? 'm@gmail.com' : user.email}</span>
           </div>
         </div>
 

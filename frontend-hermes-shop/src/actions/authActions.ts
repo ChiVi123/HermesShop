@@ -1,22 +1,20 @@
 'use server';
 
-import { ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { ZodError } from 'zod/v4';
-import { CONTENT_TYPE_JSON } from '~/lib/fetchClient/constants';
+import { cookieOptions, RoutePage, TokenName } from '~/constants';
 import { FetchClientError } from '~/lib/fetchClient/FetchClientError';
 import { apiClient } from '~/lib/helpers/apiClient';
-import { parseCookies } from '~/lib/helpers/parses';
 import { LoginFormSchema } from '~/lib/validates/authValidate';
+import { User } from '~/types/user';
 
 type ValidateError = ZodError<{
   email: string;
   password: string;
 }>;
-type LoginResult = { errors?: ValidateError; message?: string };
 
-export async function login(_: unknown, formData: FormData): Promise<LoginResult> {
+export async function login(_: unknown, formData: FormData): Promise<{ errors?: ValidateError; message: string }> {
   const validatedFields = LoginFormSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
@@ -25,30 +23,19 @@ export async function login(_: unknown, formData: FormData): Promise<LoginResult
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error,
+      message: 'invalid fields',
     };
   }
 
-  const response = await apiClient
-    .post('/v1/auth/login', {
-      headers: { 'content-type': CONTENT_TYPE_JSON },
-      body: JSON.stringify(validatedFields.data),
-    })
-    .fetchError()
-    .res();
+  const result = await apiClient.post('/v1/auth/login', { data: validatedFields.data }).fetchError().json<User>();
 
-  if (response instanceof FetchClientError) {
-    return { message: response.json?.message ?? response.message };
-  }
-  if (response instanceof Error) {
-    return { message: response.message };
+  if (result instanceof Error) {
+    return { message: result instanceof FetchClientError ? result.json?.message ?? result.message : result.message };
   }
 
   const cookieStore = await cookies();
-  const cookiesParsed = response.headers.getSetCookie().map((item) => parseCookies(item));
+  cookieStore.set(TokenName.ACCESS_TOKEN, result.accessToken, cookieOptions);
+  cookieStore.set(TokenName.REFRESH_TOKEN, result.refreshToken, cookieOptions);
 
-  cookiesParsed.forEach((item) => {
-    cookieStore.set({ ...(item as ResponseCookie) });
-  });
-
-  redirect('/profile');
+  redirect(RoutePage.PROFILE);
 }
